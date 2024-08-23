@@ -19,6 +19,8 @@ public interface IActor
 
     int GetID();
 
+    Transform GetTransform();
+
 }
 
 public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
@@ -26,7 +28,9 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
     //Declarations
     [Header("Combat")]
     private bool _isInCombat = false;
-    private IActor _target;
+    [SerializeField] private IActor _target;
+    [SerializeField] private float _meleeAtkDisplacementOffset = .3f;
+    private Vector2 _atkDirection = Vector2.zero;
     [SerializeField] private float _attackWindupDuration;
     [SerializeField] private float _attackSwingDuration;
     [SerializeField] private float _hurtStunDuration;
@@ -43,6 +47,8 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
 
     [Header("Debug")]
     [SerializeField] private bool _isDebugActive = false;
+    [SerializeField] private bool _DEBUG_setTarget_cmd = false;
+    [SerializeField] private ActorBehavior _DEBUG_targetActor_param;
     [SerializeField] private bool _DEBUG_enterAttack_cmd = false;
     [SerializeField] private bool _DEBUG_exitAttack_cmd = false;
     [SerializeField] private bool _DEBUG_takeDamage_cmd = false;
@@ -65,8 +71,17 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
             return;
         }
 
-        else
+        //Only start an attack if we have a target
+        else if (_target != null)
         {
+            //Calculate the direction from ourself to the target
+            Vector3 directionTorwardsTarget = _target.GetTransform().position - transform.position;
+            QuickLogger.ConditionalLog(_isDebugActive, this, $"target's direction from self: {directionTorwardsTarget}");
+
+            //convert the direction into simpler (X,Y) form -- no Depth exists
+            _atkDirection = new Vector2(directionTorwardsTarget.x, directionTorwardsTarget.y);
+
+
             //set the attack coordinator
             _attackCoordinator = PerformAttackSequence();
 
@@ -127,7 +142,10 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
         QuickLogger.ConditionalLog(_isDebugActive, this, "SWING!");
 
         //CastAttack
-        //... actual interaction logic here
+        if (_target == null)
+        {
+            //play miss sound
+        }
 
 
 
@@ -207,6 +225,11 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
         return GetInstanceID();
     }
 
+    public Transform GetTransform()
+    {
+        return transform;
+    }
+
 
 
     //Debug
@@ -240,6 +263,13 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
             {
                 _DEBUG_takeDamage_cmd = false;
                 HurtActor(0, DamageType.Physical, Vector2.zero);
+            }
+
+            if (_DEBUG_setTarget_cmd)
+            {
+                _DEBUG_setTarget_cmd = false;
+                _target = _DEBUG_targetActor_param;
+                QuickLogger.ConditionalLog(_isDebugActive, this, $"Target Set to {_DEBUG_targetActor_param}");
             }
         }
     }
