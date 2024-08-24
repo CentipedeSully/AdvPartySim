@@ -45,14 +45,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58674693bb67c7f418acc46207441adc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _spriteParentTransform: {fileID: 2974082976682009617}
+  _meleeAtkDisplacementOffset: 0.3
+  _lerpToTargetDuration: 0.75
+  _lerpBackToOriginDuration: 0.2
   _attackWindupDuration: 0.39
   _attackSwingDuration: 0.13
   _hurtStunDuration: 0.23
-  _isHurtStunned: 0
   _animator: {fileID: 1821668498165979365}
   _atkParam: isAttacking
   _hurtParam: onHurt
   _isDebugActive: 1
+  _DEBUG_setTarget_cmd: 0
+  _DEBUG_targetActor_param: {fileID: 0}
   _DEBUG_enterAttack_cmd: 0
   _DEBUG_exitAttack_cmd: 0
   _DEBUG_takeDamage_cmd: 0
