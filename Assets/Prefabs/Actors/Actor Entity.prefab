@@ -315,7 +315,7 @@ Transform:
   m_GameObject: {fileID: 4816562034024749803}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3.5, y: 0.5, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -335,14 +335,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58674693bb67c7f418acc46207441adc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _atkCooldown: 0.5
+  _atkCooldownDuration: 0.5
+  _hurtStunDuration: 0.23
+  _attackWindupDuration: 0.55
+  _attackRecoveryDuration: 0.2
+  _isInCombat: 0
+  _isAtkReady: 1
+  _isAtkCoolingDown: 0
+  _isHurtStunned: 0
   _spriteParentTransform: {fileID: 2974082976682009617}
-  _meleeAtkDisplacementOffset: 0.3
+  _meleeAtkLerpDistance: 0.3
   _lerpToTargetDuration: 0.75
   _lerpBackToOriginDuration: 0.2
-  _attackWindupDuration: 0.55
-  _attackSwingDuration: 0.13
-  _hurtStunDuration: 0.23
   _meleeMiss: {fileID: 6278586562571952446}
   _missPitchRange: {x: 0, y: 0}
   _meleeHit: {fileID: 7744700304885058599}
@@ -353,6 +357,7 @@ MonoBehaviour:
   _isDebugActive: 1
   _DEBUG_setTarget_cmd: 0
   _DEBUG_targetActor_param: {fileID: 0}
+  _DEBUG_isTargetSet: 0
   _DEBUG_spamAttacks_cmd: 0
   _DEBUG_enterAttack_cmd: 0
   _DEBUG_exitAttack_cmd: 0
@@ -416,7 +421,7 @@ Transform:
   m_GameObject: {fileID: 8436355644455448262}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -7, y: 2, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

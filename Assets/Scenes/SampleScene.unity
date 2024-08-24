@@ -691,12 +691,12 @@ PrefabInstance:
     - target: {fileID: 5563064953053692271, guid: 54d9d5b54fc7dd94fbd914688b5a1173,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.5
+      value: -6
       objectReference: {fileID: 0}
     - target: {fileID: 5563064953053692271, guid: 54d9d5b54fc7dd94fbd914688b5a1173,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5563064953053692271, guid: 54d9d5b54fc7dd94fbd914688b5a1173,
         type: 3}
@@ -1376,10 +1376,20 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1341621474}
     m_Modifications:
+    - target: {fileID: 4313272743984853342, guid: 54d9d5b54fc7dd94fbd914688b5a1173,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4816562034024749803, guid: 54d9d5b54fc7dd94fbd914688b5a1173,
         type: 3}
       propertyPath: m_Name
       value: Actor Entity
+      objectReference: {fileID: 0}
+    - target: {fileID: 5329447770362524053, guid: 54d9d5b54fc7dd94fbd914688b5a1173,
+        type: 3}
+      propertyPath: _isDebugActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5329447770362524053, guid: 54d9d5b54fc7dd94fbd914688b5a1173,
         type: 3}
@@ -1389,12 +1399,12 @@ PrefabInstance:
     - target: {fileID: 5563064953053692271, guid: 54d9d5b54fc7dd94fbd914688b5a1173,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -3.5
+      value: -7
       objectReference: {fileID: 0}
     - target: {fileID: 5563064953053692271, guid: 54d9d5b54fc7dd94fbd914688b5a1173,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.5
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 5563064953053692271, guid: 54d9d5b54fc7dd94fbd914688b5a1173,
         type: 3}

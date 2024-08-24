@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using Sirenix.OdinInspector;
 
 
 public enum DamageType
@@ -29,58 +30,112 @@ public interface IActor
 public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
 {
     //Declarations
-    [Header("Combat")]
-    private bool _isInCombat = false;
-    private bool _isAtkReady = true;
-    private bool _isAtkCoolingDown = false;
-    [SerializeField] [Min(.5f)] private float _atkCooldown = .5f;
+    [BoxGroup("Combat")]
+    [SerializeField]
+    [Min(.5f)]
+    private float _atkCooldownDuration = .5f;
+
+    [BoxGroup("Combat")]
+    [SerializeField] private float _hurtStunDuration;
+
+    [BoxGroup("Combat")]
+    [SerializeField] private float _attackWindupDuration;
+
+    [BoxGroup("Combat")]
+    [SerializeField] private float _attackRecoveryDuration;
+
+
+    [TabGroup("Combat Tabs", "Combat States")]
+    [SerializeField] private bool _isInCombat = false;
+
+    [TabGroup("Combat Tabs", "Combat States")] 
+    [SerializeField] private bool _isAtkReady = true;
+
+    [TabGroup("Combat Tabs", "Combat States")]
+    [SerializeField] private bool _isAtkCoolingDown = false;
+
+    [TabGroup("Combat Tabs", "Combat States")]
+    [SerializeField] private bool _isHurtStunned = false;
+    private float _remainingHurtStunTime = 0;
+
+
+    [TabGroup("Combat Tabs", "Combat Targeting")]
     [SerializeField] private IActor _target;
+
+    [TabGroup("Combat Tabs", "Combat Animation Tweaks")]
     [SerializeField] private Transform _spriteParentTransform;
 
-    [SerializeField] private float _meleeAtkDisplacementOffset = .3f;
+    [TabGroup("Combat Tabs", "Combat Animation Tweaks")]
+    [SerializeField] private float _meleeAtkLerpDistance = .3f;
+
+    [TabGroup("Combat Tabs", "Combat Animation Tweaks")]
+    [SerializeField] private float _lerpToTargetDuration;
+
+    [TabGroup("Combat Tabs", "Combat Animation Tweaks")]
+    [SerializeField] private float _lerpBackToOriginDuration;
+
     private Vector2 _atkOrigin;
     private Vector2 _atkDirection = Vector2.zero;
     private bool _isPositionOffset = false;
-
     private bool _isLerpingTowardsTarget = false;
+
     private float _currentLerpToTargetTime = 0;
-    [Tooltip("This should at least match the atk's windup time")]
-    [SerializeField] private float _lerpToTargetDuration;
     private Vector2 _toTargetStartPoint;
     private Vector2 _toTargetEndPoint;
 
     private float _currentLerpToOriginTime = 0;
-    [Tooltip("This should at most last however long it takes the atk to recover")]
-    [SerializeField] private float _lerpBackToOriginDuration;
     private Vector2 _toOriginStartPoint;
     private Vector2 _toOriginEndPoint;
 
-    [SerializeField] private float _attackWindupDuration;
-    [SerializeField] private float _attackSwingDuration;
-    [SerializeField] private float _hurtStunDuration;
-    private bool _isHurtStunned = false;
-    private float _remainingHurtStunTime = 0;
-
     private IEnumerator _attackCoordinator;
 
-    [Header("SFX")]
-    [SerializeField] private AudioSource _meleeMiss;
-    [SerializeField] private Vector2 _missPitchRange;
-    [SerializeField] private AudioSource _meleeHit;
-    [SerializeField] private Vector2 _hitPitchRange;
 
-    [Header("Animation")]
+    [Space]
+    [BoxGroup("SFX")][SerializeField] private AudioSource _meleeMiss;
+    [BoxGroup("SFX")][SerializeField] private Vector2 _missPitchRange;
+    [BoxGroup("SFX")][SerializeField] private AudioSource _meleeHit;
+    [BoxGroup("SFX")][SerializeField] private Vector2 _hitPitchRange;
+
+
+    [Space]
+    [BoxGroup("Animation Settings")]
     [SerializeField] private Animator _animator;
+
+    [BoxGroup("Animation Settings")]
     [SerializeField] private string _atkParam = "isAttacking";
+
+    [BoxGroup("Animation Settings")]
     [SerializeField] private string _hurtParam = "isHurt";
 
-    [Header("Debug")]
+
+    [Space]
+    [Header("Debug Mode")]
     [SerializeField] private bool _isDebugActive = false;
+    [ShowIfGroup("_isDebugActive")]
+
+
+
+    [TabGroup("_isDebugActive/Debug","Parameters")]
     [SerializeField] private bool _DEBUG_setTarget_cmd = false;
+
+    [TabGroup("_isDebugActive/Debug", "Parameters")]
     [SerializeField] private ActorBehavior _DEBUG_targetActor_param;
+
+    [TabGroup("_isDebugActive/Debug", "Parameters")]
+    [SerializeField][DisableIf("@true")] private bool _DEBUG_isTargetSet = false;
+
+
+
+    [TabGroup("_isDebugActive/Debug", "Commands")]
     [SerializeField] private bool _DEBUG_spamAttacks_cmd = false;
+
+    [TabGroup("_isDebugActive/Debug", "Commands")]
     [SerializeField] private bool _DEBUG_enterAttack_cmd = false;
+
+    [TabGroup("_isDebugActive/Debug", "Commands")]
     [SerializeField] private bool _DEBUG_exitAttack_cmd = false;
+
+    [TabGroup("_isDebugActive/Debug", "Commands")]
     [SerializeField] private bool _DEBUG_takeDamage_cmd = false;
 
     //Monobehaviors
@@ -118,7 +173,7 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
                 //Calculate the direction from ourself to the target
                 float xDistanceFromTarget = _target.GetTransform().position.x - transform.position.x;
                 float yDistanceFromTarget = _target.GetTransform().position.y - transform.position.y;
-                _atkDirection = new Vector2(xDistanceFromTarget, yDistanceFromTarget).normalized * _meleeAtkDisplacementOffset;
+                _atkDirection = new Vector2(xDistanceFromTarget, yDistanceFromTarget).normalized * _meleeAtkLerpDistance;
 
                 //Create our TowardsTarget lerp line
                 _toTargetStartPoint = transform.position;
@@ -225,7 +280,7 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
 
         //Wait for attack swing animation duration
         QuickLogger.ConditionalLog(_isDebugActive, this, "Waiting for attack swing animation time to expire");
-        yield return new WaitForSeconds(_attackSwingDuration);
+        yield return new WaitForSeconds(_attackRecoveryDuration);
 
 
         //End Animation
@@ -319,7 +374,7 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
         if (!_isAtkCoolingDown)
         {
             _isAtkCoolingDown = true;
-            Invoke(nameof(ReadyAtk), _atkCooldown);
+            Invoke(nameof(ReadyAtk), _atkCooldownDuration);
         }
     }
 
@@ -328,6 +383,8 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
         _isAtkReady = true;
         _isAtkCoolingDown = false;
     }
+
+
 
     //Externals
     public void HurtActor(int damage, DamageType damageType, Vector2 AttackerPosition)
@@ -369,6 +426,15 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
         }
     }
 
+    public void SetTarget(IActor actor)
+    {
+        if (actor != null)
+        {
+            _DEBUG_isTargetSet = true;
+            _target = actor;
+        }
+    }
+
 
 
     //Debug
@@ -386,6 +452,13 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
     {
         if (_isDebugActive)
         {
+            //update informative values
+            if (_target != null)
+                _DEBUG_isTargetSet = true;
+            else _DEBUG_isTargetSet = false;
+
+
+            //Listen for commands
             if (_DEBUG_enterAttack_cmd)
             {
                 _DEBUG_enterAttack_cmd = false;
