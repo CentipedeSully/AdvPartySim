@@ -22,6 +22,8 @@ public interface IActor
 
     Transform GetTransform();
 
+    void PlaySound(string sound);
+
 }
 
 public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
@@ -60,6 +62,12 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
     private float _remainingHurtStunTime = 0;
 
     private IEnumerator _attackCoordinator;
+
+    [Header("SFX")]
+    [SerializeField] private AudioSource _meleeMiss;
+    [SerializeField] private Vector2 _missPitchRange;
+    [SerializeField] private AudioSource _meleeHit;
+    [SerializeField] private Vector2 _hitPitchRange;
 
     [Header("Animation")]
     [SerializeField] private Animator _animator;
@@ -204,6 +212,15 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
         if (_target == null)
         {
             //play miss sound
+            _meleeMiss.Play();
+        }
+        else
+        {
+            //communicate damage
+            _target.HurtActor(0, DamageType.Physical, _atkOrigin);
+
+            //play hit sound
+            _target.PlaySound("meleeHit");
         }
 
         //Wait for attack swing animation duration
@@ -336,6 +353,20 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
     public Transform GetTransform()
     {
         return transform;
+    }
+
+    public void PlaySound(string soundFx)
+    {
+        switch (soundFx)
+        {
+            case "meleeHit":
+                _meleeHit.Play();
+                break;
+
+            default:
+                QuickLogger.Warn(this, $"SoundFx '{soundFx}' not found");
+                break;
+        }
     }
 
 
