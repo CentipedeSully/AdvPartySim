@@ -12,6 +12,13 @@ public enum DamageType
     Magical
 }
 
+public enum IndicatorType
+{
+    Miss,
+    Damage,
+    Heal,
+    LevelUp
+}
 
 public interface IActor
 {
@@ -24,6 +31,8 @@ public interface IActor
     Transform GetTransform();
 
     void PlaySound(string sound);
+
+    void ShowIndicator(IndicatorType type, string value);
 
 }
 
@@ -43,6 +52,10 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
 
     [BoxGroup("Combat")]
     [SerializeField] private float _attackRecoveryDuration;
+
+    [BoxGroup("Combat")]
+    [Tooltip("100 is gauranteed hit")]
+    [SerializeField] private int _hitChance = 80;
 
 
     [TabGroup("Combat Tabs", "Combat States")]
@@ -91,21 +104,26 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
 
 
     [Space]
-    [BoxGroup("SFX")][SerializeField] private AudioSource _meleeMiss;
-    [BoxGroup("SFX")][SerializeField] private Vector2 _missPitchRange;
-    [BoxGroup("SFX")][SerializeField] private AudioSource _meleeHit;
-    [BoxGroup("SFX")][SerializeField] private Vector2 _hitPitchRange;
+    [TabGroup("Effects","SFX")][SerializeField] private AudioSource _meleeMiss;
+    [TabGroup("Effects", "SFX")][SerializeField] private Vector2 _missPitchRange;
+    [TabGroup("Effects", "SFX")][SerializeField] private AudioSource _meleeHit;
+    [TabGroup("Effects", "SFX")][SerializeField] private Vector2 _hitPitchRange;
 
 
-    [Space]
-    [BoxGroup("Animation Settings")]
+    [TabGroup("Effects", "Animaton Parameters")]
     [SerializeField] private Animator _animator;
 
-    [BoxGroup("Animation Settings")]
+    [TabGroup("Effects", "Animaton Parameters")]
     [SerializeField] private string _atkParam = "isAttacking";
 
-    [BoxGroup("Animation Settings")]
+    [TabGroup("Effects", "Animaton Parameters")]
     [SerializeField] private string _hurtParam = "isHurt";
+
+
+    [TabGroup("Effects", "UI Graphics")]
+    [SerializeField] private CreateIndicator _indicatorCreater;
+    [TabGroup("Effects", "UI Graphics")]
+    [SerializeField] private Transform _indicatorContainer;
 
 
     [Space]
@@ -263,19 +281,40 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
         //Log Status
         QuickLogger.ConditionalLog(_isDebugActive, this, "SWING!");
 
-        //CastAttack
+        //AutoMiss if target doesn't exist anymore
         if (_target == null)
         {
             //play miss sound
             _meleeMiss.Play();
+
+            //Create a miss indicator over this actor
+            ShowIndicator(IndicatorType.Miss, "");
         }
+
+        //Else determine hit
         else
         {
-            //communicate damage
-            _target.HurtActor(0, DamageType.Physical, _atkOrigin);
+            if (DoesAttackHit())
+            {
+                //communicate damage
+                _target.HurtActor(0, DamageType.Physical, _atkOrigin);
 
-            //play hit sound
-            _target.PlaySound("meleeHit");
+                //play hit sound
+                _target.PlaySound("meleeHit");
+
+                //create a damage indicator over the hurt actor
+                _target.ShowIndicator(IndicatorType.Damage, 0.ToString());
+            }
+
+            else
+            {
+                //play miss sound
+                _meleeMiss.Play();
+
+                //Create a miss indicator over this actor
+                _target.ShowIndicator(IndicatorType.Miss, "");
+            }
+            
         }
 
         //Wait for attack swing animation duration
@@ -384,6 +423,21 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
         _isAtkCoolingDown = false;
     }
 
+    private bool DoesAttackHit()
+    {
+        //Generate number from 1 to 100
+        int hitRoll = UnityEngine.Random.Range(1, 101);
+
+        //Determine hit result
+        bool result = hitRoll <= _hitChance;
+
+        //Log Result
+        QuickLogger.ConditionalLog(_isDebugActive, this, $"Hit Number Rolled: {hitRoll}\nHit Result: {result}");
+
+        //return result
+        return result;
+
+    }
 
 
     //Externals
@@ -432,6 +486,81 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
         {
             _DEBUG_isTargetSet = true;
             _target = actor;
+        }
+    }
+
+    public void ShowIndicator(IndicatorType type, string value)
+    {
+        GameObject newIndicator = null;
+        IndicatorBehavior behavior = null;
+
+        switch (type)
+        {
+            case IndicatorType.Miss:
+                //cache the newly-created object
+                newIndicator = _indicatorCreater.CreateNewIndicator(_indicatorContainer, type);
+
+                //cache the object's indicator behavior
+                behavior = newIndicator.GetComponent<IndicatorBehavior>();
+
+                //Show the indicator
+                behavior.ShowIndicator();
+
+                //leave
+                break;
+
+
+            case IndicatorType.Damage:
+                //cache the newly-created object
+                newIndicator = _indicatorCreater.CreateNewIndicator(_indicatorContainer, type);
+
+                //cache the object's indicator behavior
+                behavior = newIndicator.GetComponent<IndicatorBehavior>();
+
+                //display the damage dealt
+                behavior.SetText(value);
+
+                //Show the indicator
+                behavior.ShowIndicator();
+
+                //leave
+                break;
+
+
+            case IndicatorType.Heal:
+                //cache the newly-created object
+                newIndicator = _indicatorCreater.CreateNewIndicator(_indicatorContainer, type);
+
+                //cache the object's indicator behavior
+                behavior = newIndicator.GetComponent<IndicatorBehavior>();
+
+                //display the heals gained
+                behavior.SetText(value);
+
+                //Show the indicator
+                behavior.ShowIndicator();
+
+                //leave
+                break;
+
+
+            case IndicatorType.LevelUp:
+                //cache the newly-created object
+                newIndicator = _indicatorCreater.CreateNewIndicator(_indicatorContainer, type);
+
+                //cache the object's indicator behavior
+                behavior = newIndicator.GetComponent<IndicatorBehavior>();
+
+                //Show the indicator
+                behavior.ShowIndicator();
+
+                //leave
+                break;
+
+
+            default:
+                QuickLogger.Warn(this, $"No indicator of type {type} exists");
+                break;
         }
     }
 

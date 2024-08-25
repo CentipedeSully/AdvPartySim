@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Sirenix.OdinInspector;
 
-public class GameManager : MonoBehaviour
+public class GameManager : SerializedMonoBehaviour
 {
     //Declarations
 
@@ -17,9 +18,8 @@ public class GameManager : MonoBehaviour
 
 
 
-
     //Externals
-
+    
 
 
 

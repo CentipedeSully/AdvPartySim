@@ -41,3 +41,12 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Hit Graphics
+    uniqueID: 494134749
+    locked: 0
+  - name: Actor Indicators
+    uniqueID: 3760374573
+    locked: 0
+  - name: UI
+    uniqueID: 1424179875
+    locked: 0
