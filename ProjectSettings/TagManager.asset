@@ -41,6 +41,12 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Debug Grid Positions
+    uniqueID: 442532977
+    locked: 0
+  - name: Actors
+    uniqueID: 717981763
+    locked: 0
   - name: Hit Graphics
     uniqueID: 494134749
     locked: 0
