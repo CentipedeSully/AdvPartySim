@@ -33,19 +33,23 @@ public struct PathNode
     }
 }
 
+
+
 [Serializable]
 public class PathGrid
 {
     private PathNode[,] _grid;
     private Grid _unityGrid;
+    private Vector3 _gridOffset;
     private int _width;
     private int _height;
 
-    public PathGrid(int width, int height, Grid unityGrid)
+    public PathGrid(int width, int height, Grid unityGrid, Vector3 offset)
     {
         _width = width; 
         _height = height;
         _unityGrid = unityGrid;
+        _gridOffset = offset;
 
         _grid = new PathNode[width,height];
 
@@ -58,6 +62,9 @@ public class PathGrid
 
                 //Set each world position
                 _grid[i, j]._localPosition = _unityGrid.CellToLocal(new Vector3Int(i,j,0));
+
+                //Add gridOffset
+                _grid[i, j]._localPosition += _gridOffset;
 
             }
         }
@@ -94,6 +101,8 @@ public class PathGrid
     }
 }
 
+
+
 [Serializable]
 public struct DebugNode
 {
@@ -115,26 +124,65 @@ public struct DebugNode
 
     }
 
+    public DebugNode(int x, int y, GameObject visualTileObject, Vector3 localPosition)
+    {
+        _xPosition = x;
+        _yPosition = y;
+        _visualTile = visualTileObject;
+
+        //place the node at it's proper position
+        _visualTile.transform.localPosition = localPosition;
+    }
+
     
 } 
 
-public class PathManager : SerializedMonoBehaviour
+
+
+public class PathManager : SerializedMonoBehaviour, IQuickLoggable
 {
     //Declarations
+    [TabGroup("Setup", "Parameters")]
+    [SerializeField] private int _gridWidth;
+
+    [TabGroup("Setup", "Parameters")]
+    [SerializeField] private int _gridHeight;
+
+    [TabGroup("Setup", "Parameters")]
+    [SerializeField] private Vector3 _gridOffset = new Vector3(0, 1.5f, 0);
+
+    [TabGroup("Setup","References")]
     [SerializeField] private Grid _unityGrid;
+
+    [TabGroup("Setup", "References")]
     [SerializeField] private Transform _DebugGridObjectTransform;
+
+    [TabGroup("Setup", "References")]
     [SerializeField] private GameObject _positionDebugTilePrefab;
+
+    [TabGroup("Setup", "References")]
+    [SerializeField] private GameObject _xCounterTilePrefab;
+
+    [TabGroup("Setup", "References")]
+    [SerializeField] private GameObject _yCounterTilePrefab;
+
+    [TabGroup("Setup", "References")]
+    [SerializeField] private Camera _eventCamera;
+
+    [TabGroup("Grid", "Nodes")]
     [SerializeField] List<PathNode> _pathNodes = new();
     private PathGrid _pathGrid;
-    private List<DebugNode> _debugNodes = new();
-    [SerializeField] private int _gridWidth;
-    [SerializeField] private int _gridHeight;
+
+    [TabGroup("Grid", "Debug Nodes")]
+    [SerializeField] private List<DebugNode> _debugNodes = new();
+
     //[SerializeField] private Dictionary<int,IPathAgent> _agents;
+    [Space]
+    [SerializeField] private bool _isDebugActive = true; 
 
     [Button("Build Grid")]
     private void DefaultSizedButton()
     {
-        Debug.Log("button Activated");
         BuildPathGrid();
     }
 
@@ -148,8 +196,6 @@ public class PathManager : SerializedMonoBehaviour
     {
         //declare our temp object
         GameObject newDebugTile = null;
-
-        //declare
 
 
         //For each node on the grid...
@@ -166,9 +212,60 @@ public class PathManager : SerializedMonoBehaviour
                 //Create a new debug tile
                 newDebugTile = Instantiate(_positionDebugTilePrefab, _DebugGridObjectTransform);
 
+                //Setup DebugTile Behavior
+                newDebugTile.GetComponent<DebugTileBehavior>().SetCamera(_eventCamera);
+                newDebugTile.GetComponent<DebugTileBehavior>().SetIndex(i,j);
+                newDebugTile.GetComponent<DebugTileBehavior>().SetValue($"({i},{j})");
+
                 //Create a new DebugNode and add it to our debugNode collection 
                 _debugNodes.Add(new DebugNode(currentNode, newDebugTile));
             }
+        }
+
+        //delcare the variables for our x & y indicator tiles
+        GameObject newXTile = null;
+        GameObject newYTile = null;
+
+        //Label the x rows
+        for (int i=0; i < _gridWidth; i++)
+        {
+            // Create an x DebugTile to label the current row 
+            newXTile = Instantiate(_xCounterTilePrefab, _DebugGridObjectTransform);
+
+            //Setup DebugTile Behavior
+            newXTile.GetComponent<DebugTileBehavior>().SetCamera(_eventCamera);
+            newXTile.GetComponent<DebugTileBehavior>().SetIndex(i, -1);
+            newXTile.GetComponent<DebugTileBehavior>().SetValue(i.ToString());
+
+            //calculate the node's local position
+            Vector3 localPosition = _unityGrid.CellToLocal( new Vector3Int(i,-1,0));
+
+            //offset the node
+            localPosition += _gridOffset;
+
+            //Create a new DebugNode and add it to our debugNode collection 
+            _debugNodes.Add(new DebugNode(i, -1, newXTile, localPosition));
+        }
+
+        //Label the y columns
+        for (int j = 0; j < _gridHeight; j++)
+        {
+            // Create a y DebugTile to label the current y column
+            newYTile = Instantiate(_yCounterTilePrefab, _DebugGridObjectTransform);
+
+            //Setup DebugTile Behavior
+            newYTile.GetComponent<DebugTileBehavior>().SetCamera(_eventCamera);
+            newYTile.GetComponent<DebugTileBehavior>().SetIndex(-1, j);
+            newYTile.GetComponent<DebugTileBehavior>().SetValue(j.ToString());
+
+            //calculate the node's local position
+            Vector3 localPosition = _unityGrid.CellToLocal(new Vector3Int(-1, j, 0));
+
+            //offset the node
+            localPosition += _gridOffset;
+
+            //Create a new DebugNode and add it to our debugNode collection 
+            _debugNodes.Add(new DebugNode(-1, j, newYTile, localPosition));
         }
     }
 
@@ -195,19 +292,68 @@ public class PathManager : SerializedMonoBehaviour
                     Destroy(node._visualTile);
             }
 
+            //clear all the debug nodes
+            _debugNodes.Clear();
+
         }
 
         //Build the pathing grid
-        _pathGrid = new PathGrid(_gridWidth, _gridHeight, _unityGrid);
+        _pathGrid = new PathGrid(_gridWidth, _gridHeight, _unityGrid, _gridOffset);
 
         //Build the debug utilites associated with this new grid
         BuildDebugUtilities();
     }
 
 
+    [Button("GetLocalCellPosition")]
+    public Vector3 GetLocalCellPosition(int x, int y)
+    {
+        Vector3Int cellPosition = new Vector3Int(x, y, 0);
+        Vector3 localPosition = _unityGrid.CellToLocal(cellPosition) + _gridOffset;
+
+        //log position
+        QuickLogger.ConditionalLog(_isDebugActive, this, $"Cell ({x},{y}) Local: {localPosition}");
+
+        return localPosition;
+    }
+
+    public Vector3 GetLocalCellPosition((int,int) xy)
+    {
+        return GetLocalCellPosition(xy.Item1, xy.Item2);
+    }
+
+
+
+
+    public Vector3 GetWorldCellPositon(int x, int y)
+    {
+        Vector3Int cellPosition = new Vector3Int(x, y, 0);
+        Vector3 worldPosition = _unityGrid.CellToWorld(cellPosition) + _gridOffset;
+
+        //log position
+        QuickLogger.ConditionalLog(_isDebugActive, this, $"Cell ({x},{y}) World: {worldPosition}");
+
+        return worldPosition;
+    }
+    
+    public Vector3 GetWorldCellPositon((int,int) xy)
+    {
+        return GetWorldCellPositon(xy.Item1, xy.Item2);
+    }
+
+
+
 
     //Debugging
+    public int GetScriptID()
+    {
+        return GetInstanceID();
+    }
 
+    public string GetScriptName()
+    {
+        return name;
+    }
 
 
 

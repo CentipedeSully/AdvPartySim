@@ -358,7 +358,7 @@ MonoBehaviour:
   _hurtParam: onHurt
   _indicatorCreater: {fileID: 5304306130512907969}
   _indicatorContainer: {fileID: 5446551553504274927}
-  _isDebugActive: 1
+  _isDebugActive: 0
   _DEBUG_setTarget_cmd: 0
   _DEBUG_targetActor_param: {fileID: 0}
   _DEBUG_isTargetSet: 0
@@ -393,7 +393,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.75, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5563064953053692271}
@@ -411,8 +411,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   serializationData:
-    SerializedFormat: 2
-    SerializedBytes: 
+    SerializedFormat: 0
+    SerializedBytes: 0101110000005f0069006e00640069006300610074006f00720050007200650066006100620073002f000000000184000000530079007300740065006d002e0043006f006c006c0065006300740069006f006e0073002e00470065006e0065007200690063002e00440069006300740069006f006e00610072007900600032005b005b0049006e00640069006300610074006f00720054007900700065002c00200041007300730065006d0062006c0079002d004300530068006100720070005d002c005b0055006e0069007400790045006e00670069006e0065002e00470061006d0065004f0062006a006500630074002c00200055006e0069007400790045006e00670069006e0065002e0043006f00720065004d006f00640075006c0065005d005d002c0020006d00730063006f0072006c00690062000000000001010800000063006f006d00700061007200650072002f01000000015d000000530079007300740065006d002e0043006f006c006c0065006300740069006f006e0073002e00470065006e0065007200690063002e0045006e0075006d0045007100750061006c0069007400790043006f006d0070006100720065007200600031005b005b0049006e00640069006300610074006f00720054007900700065002c00200041007300730065006d0062006c0079002d004300530068006100720070005d005d002c0020006d00730063006f0072006c0069006200010000000600000000000000000705060400000000000000042e1d010200000024006b0000000000000000000b0102000000240076000000000005042e1d010200000024006b0001000000000000000b0102000000240076000100000005042e1d010200000024006b0002000000000000000b0102000000240076000200000005042e1d010200000024006b0003000000000000000b01020000002400760003000000050705
     ReferencedUnityObjects:
     - {fileID: 4692879824689690983, guid: b1834c06996d075499ca97343affc116, type: 3}
     - {fileID: 4692879824689690983, guid: 19f0bdbfd6bc7704fa7dab125aacc505, type: 3}
@@ -422,81 +422,7 @@ MonoBehaviour:
     Prefab: {fileID: 0}
     PrefabModificationsReferencedUnityObjects: []
     PrefabModifications: []
-    SerializationNodes:
-    - Name: _indicatorPrefabs
-      Entry: 7
-      Data: 0|System.Collections.Generic.Dictionary`2[[IndicatorType, Assembly-CSharp],[UnityEngine.GameObject,
-        UnityEngine.CoreModule]], mscorlib
-    - Name: comparer
-      Entry: 7
-      Data: 1|System.Collections.Generic.EnumEqualityComparer`1[[IndicatorType, Assembly-CSharp]],
-        mscorlib
-    - Name: 
-      Entry: 12
-      Data: 0
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 12
-      Data: 4
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 0
-    - Name: $v
-      Entry: 10
-      Data: 0
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 1
-    - Name: $v
-      Entry: 10
-      Data: 1
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 2
-    - Name: $v
-      Entry: 10
-      Data: 2
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 7
-      Data: 
-    - Name: $k
-      Entry: 3
-      Data: 3
-    - Name: $v
-      Entry: 10
-      Data: 3
-    - Name: 
-      Entry: 8
-      Data: 
-    - Name: 
-      Entry: 13
-      Data: 
-    - Name: 
-      Entry: 8
-      Data: 
+    SerializationNodes: []
   _mainCamera: {fileID: 0}
 --- !u!1 &7153253945342556206
 GameObject:
