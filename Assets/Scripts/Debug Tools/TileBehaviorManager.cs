@@ -75,11 +75,11 @@ public class TileBehaviorManager : SerializedMonoBehaviour
 
 
         //Get a reference to all nodes on our grid
-        Dictionary<Vector2Int, PathNode> pathNodeCollection = _pathManager.GetPathNodes();
+        Dictionary<Vector2Int, GridNode> pathNodeCollection = _pathManager.GetPathNodes();
 
 
         //Look at each node on our grid...
-        foreach(KeyValuePair<Vector2Int,PathNode> nodeEntry in pathNodeCollection)
+        foreach(KeyValuePair<Vector2Int,GridNode> nodeEntry in pathNodeCollection)
         {
             //Get the position of the current node
             Vector3 localNodePosition = nodeEntry.Value._localPosition;

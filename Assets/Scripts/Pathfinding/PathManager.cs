@@ -5,6 +5,7 @@ using Sirenix.OdinInspector;
 using System;
 using System.Dynamic;
 using UnityEditorInternal;
+using Unity.VisualScripting;
 
 
 
@@ -15,19 +16,19 @@ public interface IPathAgent
 
 
 [Serializable]
-public struct PathNode
+public struct GridNode
 {
     public (int,int) _index;
     public Vector3 _localPosition;
-    public int _traversalCost;
+    public int _terrainTraversalCost;
     public bool _isWalkable;
     public Dictionary<int, IPathAgent> _occupants;
 
-    public PathNode(bool defaultWalkability = true)
+    public GridNode(bool defaultWalkability = false)
     {
         _index = (-1,-1);
         _localPosition = Vector3.zero;
-        _traversalCost = 0;
+        _terrainTraversalCost = 0;
         _isWalkable = defaultWalkability;
         _occupants = new Dictionary<int, IPathAgent>();
     }
@@ -36,22 +37,22 @@ public struct PathNode
 
 
 
-public class PathGrid
+public class PathingGrid
 {
-    private PathNode[,] _grid;
+    private GridNode[,] _grid;
     private Grid _unityGrid;
     private Vector3 _gridOffset;
     private int _width;
     private int _height;
 
-    public PathGrid(int width, int height, Grid unityGrid, Vector3 offset)
+    public PathingGrid(int width, int height, Grid unityGrid, Vector3 offset)
     {
         _width = width; 
         _height = height;
         _unityGrid = unityGrid;
         _gridOffset = offset;
 
-        _grid = new PathNode[width,height];
+        _grid = new GridNode[width,height];
 
         for (int i =0; i< width; i++)
         {
@@ -74,18 +75,15 @@ public class PathGrid
 
     public int Height() {return _height; }
     
-    public PathNode GetCell(int x, int y)
+    public GridNode GetCell(int x, int y)
     {
-        bool xPositionValid = (x >= 0) && (x < _width);
-        bool yPositionValid = (y >= 0) && (y < _height);
-
-        if (!xPositionValid)
+        if (!IsValidX(x))
         {
             Debug.LogError($"x index {x} out of grid path grid range");
             return default;
         }
 
-        else if (!yPositionValid)
+        else if (!IsValidY(y))
         {
             Debug.LogError($"y index {y} out of grid path grid range");
             return default;
@@ -95,22 +93,18 @@ public class PathGrid
             return _grid[x, y];
     }
 
-    public PathNode GetCell((int,int) xyPair)
+    public GridNode GetCell((int,int) xyPair)
     {
         return GetCell(xyPair.Item1, xyPair.Item2);
     }
 
-    public void UpdateCell(int x,int y, PathNode updatedNode)
+    public void UpdateCell(int x,int y, GridNode updatedNode)
     {
-        bool xPositionValid = (x >= 0) && (x < _width);
-        bool yPositionValid = (y >= 0) && (y < _height);
 
-        if (!xPositionValid)
-        {
+        if (!IsValidX(x))
             Debug.LogError($"x index {x} out of grid path grid range. Ignoring update request on index ({x},{y})");
-        }
 
-        else if (!yPositionValid)
+        else if (!IsValidY(y))
         {
             Debug.LogError($"y index {y} out of grid path grid range. Ignoring update request on index ({x},{y})");
         }
@@ -119,14 +113,41 @@ public class PathGrid
             _grid[x, y] = updatedNode;
     }
 
-    public void UpdateCell((int,int) xyPair, PathNode updatedNode)
+    public void UpdateCell((int,int) xyPair, GridNode updatedNode)
     {
         UpdateCell(xyPair.Item1, xyPair.Item2, updatedNode);
     }
 
-    public void UpdateCell(Vector2Int xyPair, PathNode updatedNode)
+    public void UpdateCell(Vector2Int xyPair, GridNode updatedNode)
     {
         UpdateCell(xyPair.x, xyPair.y, updatedNode);
+    }
+
+
+    public bool IsIndexValid(int x, int y)
+    {
+        return IsValidX(x) && IsValidY(y);
+    }
+
+    public bool IsIndexValid((int,int) xypair)
+    {
+        return IsIndexValid(xypair.Item1, xypair.Item2);
+    }
+
+    public bool IsIndexValid(Vector2Int xyPair)
+    {
+        return IsIndexValid(xyPair.x, xyPair.y);
+    }
+
+
+    private bool IsValidY(int y)
+    {
+        return (y >= 0) && (y < _height);
+    }
+
+    private bool IsValidX(int x)
+    {
+        return (x >= 0) && (x < _width);
     }
 }
 
@@ -139,7 +160,7 @@ public struct DebugNode
     public int _xPosition;
     public int _yPosition;
 
-    public DebugNode(PathNode trueNode, GameObject visualTileObject)
+    public DebugNode(GridNode trueNode, GameObject visualTileObject)
     {
         //Reflect the node's data
         _xPosition = trueNode._index.Item1;
@@ -167,6 +188,77 @@ public struct DebugNode
 }
 
 
+[Serializable]
+public struct PathNode
+{
+    public Vector2Int _index;
+    public Vector2Int _parentIndex;
+
+    public int _gCost;
+    public int _hCost;
+    public int _fCost;
+
+    public PathNode(Vector2Int index, Vector2Int parentIndex, int gCost, int hCost)
+    {
+        _index = index;
+        _parentIndex = parentIndex;
+
+        _gCost = gCost;
+        _hCost = hCost;
+        _fCost = _gCost + _hCost;
+    }
+
+    public void UpdateParentAndTraversalCost(Vector2Int newParent, int gCost, int hCost)
+    {
+        _gCost = gCost;
+        _hCost = hCost;
+        _fCost = _gCost + _hCost;
+
+        _parentIndex = newParent;
+    }
+}
+
+
+
+public static class Cardinal
+{
+    //Declarations
+    private static Vector2Int _north = new Vector2Int(0, 1);
+
+    private static Vector2Int _northEast = new Vector2Int(1, 1);
+
+    private static Vector2Int _east = new Vector2Int(1, 0);
+
+    private static Vector2Int _southEast = new Vector2Int(1, -1);
+
+    private static Vector2Int _south = new Vector2Int(0, -1);
+
+    private static Vector2Int _southWest = new Vector2Int(-1, -1);
+
+    private static Vector2Int _west = new Vector2Int(-1, 0);
+
+    private static Vector2Int _northWest = new Vector2Int(-1, 1);
+
+
+    //Externals
+    public static Vector2Int N() { return _north; }
+
+    public static Vector2Int NE() { return _northEast; }
+
+    public static Vector2Int E() { return _east; }
+
+    public static Vector2Int SE() { return _southEast; }
+
+    public static Vector2Int S() { return _south; }
+
+    public static Vector2Int SW() { return _southWest; }
+
+    public static Vector2Int W() { return _west; }
+
+    public static Vector2Int NW() { return _northWest; }
+
+}
+
 
 public class PathManager : SerializedMonoBehaviour, IQuickLoggable
 {
@@ -180,6 +272,12 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
 
     [TabGroup("Setup/Tabgroup", "Parameters")]
     [SerializeField] private Vector3 _gridOffset = new Vector3(0, 1.5f, 0);
+
+    [TabGroup("Setup/Tabgroup", "Parameters")]
+    [SerializeField] private int _straightTraveralCost= 10;
+
+    [TabGroup("Setup/Tabgroup", "Parameters")]
+    [SerializeField] private int _diagonalTraversalCost = 14; 
 
 
 
@@ -209,10 +307,10 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
 
     [BoxGroup("Grid")]
     [SerializeField]
-    private PathGrid _pathGrid;
+    private PathingGrid _pathingGrid;
 
     [TabGroup("Grid/Tabgroup", "Nodes")]
-    [SerializeField] Dictionary<Vector2Int, PathNode> _pathNodes = new();
+    [SerializeField] Dictionary<Vector2Int, GridNode> _gridNodes = new();
 
 
 
@@ -237,9 +335,7 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
 
 
     //Internals
-
-
-    [TabGroup("Debug/Tabgroup","Functions")]
+    [TabGroup("Debug/Tabgroup","Grid")]
     [Button("Generate Debug Grid")]
     private void GenerateDebugGrid()
     {
@@ -258,7 +354,7 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
 
 
         //Use our collection of gridNodes to populate our debugNode Collection
-        foreach(KeyValuePair<Vector2Int,PathNode> nodeEntry in _pathNodes)
+        foreach(KeyValuePair<Vector2Int,GridNode> nodeEntry in _gridNodes)
         {
             //Create a new debug tile
             newDebugTile = Instantiate(_positionDebugTilePrefab, _DebugGridObjectTransform);
@@ -330,7 +426,7 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
 
 
 
-    [TabGroup("Debug/Tabgroup", "Functions")]
+    [TabGroup("Debug/Tabgroup", "Grid")]
     [BoxGroup("Debug")]
     [Button("Destroy Debug Grid")]
     private void DestroyDebugGrid()
@@ -367,14 +463,14 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
     private void BuildPathGrid()
     {
         //Clear any old pathNode data
-        if (_pathNodes.Count > 0)
+        if (_gridNodes.Count > 0)
         {
             //clear all grid utils
-            _pathNodes.Clear();
+            _gridNodes.Clear();
         }
 
         //Build a new pathing grid
-        _pathGrid = new PathGrid(_gridWidth, _gridHeight, _unityGrid, _gridOffset);
+        _pathingGrid = new PathingGrid(_gridWidth, _gridHeight, _unityGrid, _gridOffset);
 
 
         //Now cache each new gridNode (nodes are value data types)...
@@ -383,13 +479,13 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
             for (int j = 0; j < _gridHeight; j++)
             {
                 //cache the current node for clarity
-                PathNode currentNode = _pathGrid.GetCell(i, j);
+                GridNode currentNode = _pathingGrid.GetCell(i, j);
 
                 //Generate the current vector2 index for clarity
                 Vector2Int dictionaryIndex = new Vector2Int(i, j);
 
                 //Add the node to the pathNode collection (for easier iteration later)
-                _pathNodes.Add(dictionaryIndex, currentNode);
+                _gridNodes.Add(dictionaryIndex, currentNode);
             }
         }
 
@@ -404,10 +500,6 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
     }
 
 
-
-
-    //[BoxGroup("Setup")]
-    //[Button("Read Walkability Data")]
     private void ReadTileWalkability()
     {
         Dictionary<Vector2Int, TileBehavior> tileBehaviors = _tileBehaviorManager.GetTileData();
@@ -415,7 +507,7 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
         foreach (KeyValuePair<Vector2Int, TileBehavior> tileEntry in tileBehaviors)
         {
             //setup a temp node that's a copy of the node we're about to update
-            PathNode node = _pathNodes[tileEntry.Key];
+            GridNode node = _gridNodes[tileEntry.Key];
 
             Debug.Log($"Behavior's Walkability: {tileEntry.Value.IsWalkable()}");
 
@@ -423,20 +515,295 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
             node._isWalkable = tileEntry.Value.IsWalkable();
 
             //replace the old node with the updated copy
-            _pathNodes[tileEntry.Key] = node;
+            _gridNodes[tileEntry.Key] = node;
 
             Debug.Log($"new node's Walkability: {node._isWalkable}");
 
             //Also be certain to reflect the change on our grid
-            _pathGrid.UpdateCell(tileEntry.Key, node);
+            _pathingGrid.UpdateCell(tileEntry.Key, node);
         }
+    }
+
+
+    [TabGroup("Debug/Tabgroup", "Pathing")]
+    [Button("Calculate Cell Distance")]
+    private int CalculateCellDistance(Vector2Int start, Vector2Int destination)
+    {
+        //create our distance variablbe
+        int distance = 0;
+
+        //Get the differences of each index element
+        int xDiff = destination.x - start.x;
+        int yDiff = destination.y - start.y;
+
+        /*Long Solution
+        //While each element BOTH hold at least 1 remaining distance step
+        while (xDiff != 0 && yDiff != 0)
+        {
+            //add a diagonal step to our distance
+            distance += _diagonalTraversalCost;
+
+            //Calculate a step in the xDifference's opposite direction
+            int xOpposite = -1 * (int)Mathf.Sign(xDiff);
+
+            //step x towards 0
+            xDiff += xOpposite;
+
+            //Calculate a step in the yDifference's opposite direction
+            int yOpposite = -1 * (int)Mathf.Sign(yDiff);
+
+            //step y towards 0
+            yDiff += yOpposite;
+        }
+        */
+
+
+        //convert our elements into positive values. 
+        xDiff = Math.Abs(xDiff);
+        yDiff = Math.Abs(yDiff);
+
+        //Find the smallest value of the two 
+        int diagonalSteps = Mathf.Min(xDiff, yDiff);
+
+        //apply the diagonal steps values 
+        distance += diagonalSteps * _diagonalTraversalCost;
+
+        //reduce both differences by the diagonal steps taken 
+        xDiff -= diagonalSteps;
+        yDiff -= diagonalSteps;
+
+        //at least one of these is zero. Get the largest of the two
+        int remainingDistanceSteps = Mathf.Max(xDiff, yDiff);
+
+        //Add the remaining Steps as straight distance steps
+        distance += remainingDistanceSteps * _straightTraveralCost;
+
+        //return our result ^_^
+        return distance;
+
+    }
+
+
+    [TabGroup("Debug/Tabgroup", "Pathing")]
+    [Button("Find Path")]
+    private List<Vector2Int> FindPath(Vector2Int start, Vector2Int destination)
+    {
+        List<Vector2Int> returnPath = new();
+        Dictionary<Vector2Int,PathNode> avaiableNodes = new();
+        Dictionary<Vector2Int, PathNode> traversedNodes = new();
+
+
+        //Stop if the start is off the grid
+        if (!_pathingGrid.IsIndexValid(start))
+        {
+            QuickLogger.ConditionalLog(_isDebugActive, this, $"Starting Index ({start}) is out of grid range. Returning empty path");
+            return returnPath;
+        }
+
+        //stop if the destination is off grid
+        else if (!_pathingGrid.IsIndexValid(destination))
+        {
+            QuickLogger.ConditionalLog(_isDebugActive, this, $"Destination ({destination}) is out of grid range. Returning empty path");
+            return returnPath;
+        }
+
+        //stop if the start isn't on a walkable cell
+        else if (!_gridNodes[start]._isWalkable)
+        {
+            QuickLogger.Warn(this, $"Caution. Attempted to path from an unwalkable starting point ${start}. Returning empty path");
+            return returnPath;
+        }
+
+        //stop if the destination isn't on a walkable cell
+        else if (!_gridNodes[destination]._isWalkable)
+        {
+            QuickLogger.Warn(this, $"Caution. Attempted to path into an unwalkable destination point ${destination}. Returning empty path");
+            return returnPath;
+
+            //Possible Feature: Adjust destination into nearest walkable point
+            //...
+        }
+
+
+        //Create an invalid index to represent a parentless node
+        Vector2Int invalidIndex = new Vector2Int(-1, -1);
+
+        //create the first node
+        PathNode startNode = new PathNode(start, invalidIndex, 0, CalculateCellDistance(start, destination));
+
+        //Add the first node to our closedNode list
+        traversedNodes.Add(start,startNode);
+
+        //Begin the recursive trace. Return a path if it exists
+        returnPath = BuildPath(startNode, destination, avaiableNodes, traversedNodes);
+
+        //return whatever came back
+        return returnPath;
+
+    }
+
+    private List<Vector2Int> BuildPath(PathNode currentNode, Vector2Int destination, Dictionary<Vector2Int, PathNode> openNodes, Dictionary<Vector2Int, PathNode> closedNodes)
+    {
+        //Check if we're at the destination
+        if (currentNode._index == destination)
+        {
+            //get the path
+            List<Vector2Int> pathList = TraceBackPath(currentNode, closedNodes);
+
+            //sort the path list into a "start-to-destination" format
+            pathList.Reverse();
+
+            //return our hard work
+            return pathList;
+        }
+
+        //Setup utils for easier neighbor iteration
+        List<PathNode> neighbors = new();
+        Vector2Int[] possibleNeighborIndexes = new Vector2Int[8];
+
+        //Calculate all possible directional neighbor indexes
+        possibleNeighborIndexes[0] = currentNode._index + Cardinal.N();
+        possibleNeighborIndexes[1] = currentNode._index + Cardinal.NE();
+        possibleNeighborIndexes[2] = currentNode._index + Cardinal.E();
+        possibleNeighborIndexes[3] = currentNode._index + Cardinal.SE();
+        possibleNeighborIndexes[4] = currentNode._index + Cardinal.S();
+        possibleNeighborIndexes[5] = currentNode._index + Cardinal.SW();
+        possibleNeighborIndexes[6] = currentNode._index + Cardinal.W();
+        possibleNeighborIndexes[7] = currentNode._index + Cardinal.NW();
+
+
+        //detect all walkable, nontraversed, cells around the currentNode
+        foreach (Vector2Int neighborIndex in possibleNeighborIndexes)
+        {
+            //ignore the cell at this index if it's off the grid
+            if (!_pathingGrid.IsIndexValid(neighborIndex))
+                continue;
+
+            //ignore the cell at this index if it's not walkable
+            if (!_gridNodes[neighborIndex]._isWalkable)
+                continue;
+
+            //ignore the cell at this index if it's already within our CLOSED Nodes
+            if (closedNodes.ContainsKey(neighborIndex))
+                continue;
+
+            //Calculate this neighbor's gCost: distance from currentNode + currentNode's gCost
+            int neighborCostG = CalculateCellDistance(currentNode._index, neighborIndex) + currentNode._gCost;
+
+            //Calculate this neighbor's hCost
+            int neightborCostH = CalculateCellDistance(neighborIndex, destination);
+
+            //Create a new path node representing this valid, upstanding neighbor
+            PathNode neighbor = new PathNode(neighborIndex, currentNode._index,neighborCostG, neightborCostH);
+
+            //Add this neighbor to the list of neighbors
+            neighbors.Add(neighbor);
+        }
+
+        //Add/Update our openNodes collection using our new neighbors
+        foreach (PathNode neighbor in neighbors)
+        {
+            //if this node already exists as an open node
+            if (openNodes.ContainsKey(neighbor._index))
+            {
+                //calculate a new gCost from this current node to the neighbor
+                int newCostG = CalculateCellDistance(currentNode._index,neighbor._index) + currentNode._gCost;
+
+                //replace the entry if our new gCost (a new path to this neighbor) is cheaper that the neighbor's
+                if (newCostG < neighbor._gCost)
+                {
+                    int newCostH = CalculateCellDistance(neighbor._index, destination);
+                    openNodes[neighbor._index].UpdateParentAndTraversalCost(currentNode._index, newCostG, newCostH);
+                }
+                    
+                    
+            }
+
+            //this neighbor is new
+            else
+            {
+                //add it to the list
+                openNodes.Add(neighbor._index, neighbor);
+            }
+        }
+
+
+        //Stop looking if we're out of options, since we still haven't reached our destination
+        if (openNodes.Count == 0)
+        {
+            QuickLogger.ConditionalLog(_isDebugActive, this, "No path found");
+            return null;
+        }
+
+        //We still have nodes to search. 
+        else
+        {
+
+            //setup a place to hold our cheapest node
+            PathNode cheapestNode = default;
+            bool isFirstIteration = true;
+
+            //Look at each node that's available for traversal
+            foreach (KeyValuePair<Vector2Int,PathNode> entry in openNodes)
+            {
+                //the first node we see is by default the cheapest
+                if (isFirstIteration)
+                    cheapestNode = entry.Value;
+
+                else
+                {
+                    //change our selection of we've found a cheaper node
+                    if (cheapestNode._fCost > entry.Value._fCost)
+                        cheapestNode = entry.Value;
+                }
+            }
+
+            //Remove our node from the openNode collection
+            openNodes.Remove(cheapestNode._index);
+
+            //add our node to the closedNode collection
+            closedNodes.Add(cheapestNode._index, cheapestNode);
+
+
+            //We've found the cheapest node that's currently available to us. 
+            //return a new iteration of this function with our updated utilities
+            return BuildPath(cheapestNode, destination, openNodes, closedNodes);
+
+        }
+    }
+
+
+    private List<Vector2Int> TraceBackPath(PathNode currentNode, Dictionary<Vector2Int,PathNode> traversedNodes)
+    {
+        //start the return list
+        List<Vector2Int> path = new();
+
+        //add our current node to the list
+        path.Add(currentNode._index);
+
+        //set the next index to our current node's parent
+        Vector2Int nextIndex = currentNode._parentIndex;
+        
+
+        //Keep tracing until we reach the node that has no valid parent
+        while (_pathingGrid.IsIndexValid(nextIndex))
+        {
+            //Add the parent's index to our path, since it's a valid cell
+            path.Add(nextIndex);
+
+            //step our index to this valid node's parentIndex
+            nextIndex = traversedNodes[nextIndex]._parentIndex;
+        }
+
+        return path;
+
     }
 
 
 
 
     //Externals
-    [TabGroup("Debug/Tabgroup", "Functions")]
+    [TabGroup("Debug/Tabgroup", "Grid")]
     [Button("GetLocalCellPosition")]
     public Vector3 GetLocalCellPosition(int x, int y)
     {
@@ -455,7 +822,7 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
     }
 
 
-    [TabGroup("Debug/Tabgroup", "Functions")]
+    [TabGroup("Debug/Tabgroup", "Grid")]
     [Button("Debug/GetWorldCellPosition")]
     public Vector3 GetWorldCellPositon(int x, int y)
     {
@@ -474,9 +841,9 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
     }
 
 
-    public Dictionary<Vector2Int, PathNode> GetPathNodes()
+    public Dictionary<Vector2Int, GridNode> GetPathNodes()
     {
-        return _pathNodes;
+        return _gridNodes;
     }
 
 
