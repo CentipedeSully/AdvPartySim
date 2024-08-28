@@ -35,7 +35,7 @@ public struct PathNode
 
 
 
-[Serializable]
+
 public class PathGrid
 {
     private PathNode[,] _grid;
@@ -99,6 +99,35 @@ public class PathGrid
     {
         return GetCell(xyPair.Item1, xyPair.Item2);
     }
+
+    public void UpdateCell(int x,int y, PathNode updatedNode)
+    {
+        bool xPositionValid = (x >= 0) && (x < _width);
+        bool yPositionValid = (y >= 0) && (y < _height);
+
+        if (!xPositionValid)
+        {
+            Debug.LogError($"x index {x} out of grid path grid range. Ignoring update request on index ({x},{y})");
+        }
+
+        else if (!yPositionValid)
+        {
+            Debug.LogError($"y index {y} out of grid path grid range. Ignoring update request on index ({x},{y})");
+        }
+
+        else 
+            _grid[x, y] = updatedNode;
+    }
+
+    public void UpdateCell((int,int) xyPair, PathNode updatedNode)
+    {
+        UpdateCell(xyPair.Item1, xyPair.Item2, updatedNode);
+    }
+
+    public void UpdateCell(Vector2Int xyPair, PathNode updatedNode)
+    {
+        UpdateCell(xyPair.x, xyPair.y, updatedNode);
+    }
 }
 
 
@@ -135,56 +164,72 @@ public struct DebugNode
     }
 
     
-} 
+}
 
 
 
 public class PathManager : SerializedMonoBehaviour, IQuickLoggable
 {
     //Declarations
-    [TabGroup("Setup", "Parameters")]
+    [BoxGroup("Setup")]
+    [TabGroup("Setup/Tabgroup", "Parameters")]
     [SerializeField] private int _gridWidth;
 
-    [TabGroup("Setup", "Parameters")]
+    [TabGroup("Setup/Tabgroup", "Parameters")]
     [SerializeField] private int _gridHeight;
 
-    [TabGroup("Setup", "Parameters")]
+    [TabGroup("Setup/Tabgroup", "Parameters")]
     [SerializeField] private Vector3 _gridOffset = new Vector3(0, 1.5f, 0);
 
-    [TabGroup("Setup","References")]
+
+
+
+    [TabGroup("Setup/Tabgroup", "References")]
     [SerializeField] private Grid _unityGrid;
 
-    [TabGroup("Setup", "References")]
+    [TabGroup("Setup/Tabgroup", "References")]
+    [SerializeField] private TileBehaviorManager _tileBehaviorManager;
+
+    [TabGroup("Setup/Tabgroup", "References")]
     [SerializeField] private Transform _DebugGridObjectTransform;
 
-    [TabGroup("Setup", "References")]
+    [TabGroup("Setup/Tabgroup", "References")]
     [SerializeField] private GameObject _positionDebugTilePrefab;
 
-    [TabGroup("Setup", "References")]
+    [TabGroup("Setup/Tabgroup", "References")]
     [SerializeField] private GameObject _xCounterTilePrefab;
 
-    [TabGroup("Setup", "References")]
+    [TabGroup("Setup/Tabgroup", "References")]
     [SerializeField] private GameObject _yCounterTilePrefab;
 
-    [TabGroup("Setup", "References")]
+    [TabGroup("Setup/Tabgroup", "References")]
     [SerializeField] private Camera _eventCamera;
 
-    [TabGroup("Grid", "Nodes")]
-    [SerializeField] List<PathNode> _pathNodes = new();
+
+
+    [BoxGroup("Grid")]
+    [SerializeField]
     private PathGrid _pathGrid;
 
-    [TabGroup("Grid", "Debug Nodes")]
-    [SerializeField] private List<DebugNode> _debugNodes = new();
+    [TabGroup("Grid/Tabgroup", "Nodes")]
+    [SerializeField] Dictionary<Vector2Int, PathNode> _pathNodes = new();
+
+
+
+    [TabGroup("Grid/Tabgroup", "Debug Nodes")]
+    [SerializeField] private Dictionary<Vector2Int, DebugNode> _debugNodes = new();
+
+
+
 
     //[SerializeField] private Dictionary<int,IPathAgent> _agents;
-    [Space]
-    [SerializeField] private bool _isDebugActive = true; 
+    [BoxGroup("Debug")]
+    [SerializeField] private bool _isDebugActive = true;
 
-    [Button("Build Grid")]
-    private void DefaultSizedButton()
-    {
-        BuildPathGrid();
-    }
+
+
+
+
 
     //Monobehaviours
 
@@ -192,42 +237,54 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
 
 
     //Internals
-    private void BuildDebugUtilities()
+
+
+    [TabGroup("Debug/Tabgroup","Functions")]
+    [Button("Generate Debug Grid")]
+    private void GenerateDebugGrid()
     {
+        //if any debug nodes OR any debug grid objects exist, destroy everything
+        if (_debugNodes.Count > 0 || _DebugGridObjectTransform.childCount > 0)
+        {
+            //Destroy all preexisting debug grid data
+            DestroyDebugGrid();
+        }
+
+
+
         //declare our temp object
         GameObject newDebugTile = null;
 
 
-        //For each node on the grid...
-        for (int i = 0; i < _gridWidth; i++)
+
+        //Use our collection of gridNodes to populate our debugNode Collection
+        foreach(KeyValuePair<Vector2Int,PathNode> nodeEntry in _pathNodes)
         {
-            for (int j = 0; j < _gridHeight; j++)
-            {
-                //cache the current node for clarity
-                PathNode currentNode = _pathGrid.GetCell(i, j);
+            //Create a new debug tile
+            newDebugTile = Instantiate(_positionDebugTilePrefab, _DebugGridObjectTransform);
 
-                //Add the node to the pathNode collection (for easier iteration later)
-                _pathNodes.Add(currentNode);
+            //declare index for clarity
+            Vector2Int index = nodeEntry.Key;
 
-                //Create a new debug tile
-                newDebugTile = Instantiate(_positionDebugTilePrefab, _DebugGridObjectTransform);
+            //Setup DebugTile Behavior
+            newDebugTile.GetComponent<DebugTileBehavior>().SetCamera(_eventCamera);
+            newDebugTile.GetComponent<DebugTileBehavior>().SetIndex(index.x, index.y);
+            newDebugTile.GetComponent<DebugTileBehavior>().SetValue($"{index.x},{index.y}");
 
-                //Setup DebugTile Behavior
-                newDebugTile.GetComponent<DebugTileBehavior>().SetCamera(_eventCamera);
-                newDebugTile.GetComponent<DebugTileBehavior>().SetIndex(i,j);
-                newDebugTile.GetComponent<DebugTileBehavior>().SetValue($"({i},{j})");
-
-                //Create a new DebugNode and add it to our debugNode collection 
-                _debugNodes.Add(new DebugNode(currentNode, newDebugTile));
-            }
+            //Create a new DebugNode and add it to our debugNode collection 
+            _debugNodes.Add(index, new DebugNode(nodeEntry.Value, newDebugTile));
         }
+
+
 
         //delcare the variables for our x & y indicator tiles
         GameObject newXTile = null;
         GameObject newYTile = null;
 
+
+
         //Label the x rows
-        for (int i=0; i < _gridWidth; i++)
+        for (int i = 0; i < _gridWidth; i++)
         {
             // Create an x DebugTile to label the current row 
             newXTile = Instantiate(_xCounterTilePrefab, _DebugGridObjectTransform);
@@ -238,14 +295,16 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
             newXTile.GetComponent<DebugTileBehavior>().SetValue(i.ToString());
 
             //calculate the node's local position
-            Vector3 localPosition = _unityGrid.CellToLocal( new Vector3Int(i,-1,0));
+            Vector3 localPosition = _unityGrid.CellToLocal(new Vector3Int(i, -1, 0));
 
             //offset the node
             localPosition += _gridOffset;
 
             //Create a new DebugNode and add it to our debugNode collection 
-            _debugNodes.Add(new DebugNode(i, -1, newXTile, localPosition));
+            _debugNodes.Add(new Vector2Int(i, -1), new DebugNode(i, -1, newXTile, localPosition));
         }
+
+
 
         //Label the y columns
         for (int j = 0; j < _gridHeight; j++)
@@ -265,7 +324,111 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
             localPosition += _gridOffset;
 
             //Create a new DebugNode and add it to our debugNode collection 
-            _debugNodes.Add(new DebugNode(-1, j, newYTile, localPosition));
+            _debugNodes.Add(new Vector2Int(-1, j), new DebugNode(-1, j, newYTile, localPosition));
+        }
+    }
+
+
+
+    [TabGroup("Debug/Tabgroup", "Functions")]
+    [BoxGroup("Debug")]
+    [Button("Destroy Debug Grid")]
+    private void DestroyDebugGrid()
+    {
+        //clear the debug node data
+        _debugNodes.Clear();
+
+        //delete each visual debug object of the previous grid
+        if (_DebugGridObjectTransform.childCount > 0)
+        {
+            //note the number of child objects we have
+            int childCount = _DebugGridObjectTransform.childCount;
+
+            //create our childCollection
+            List<GameObject> childObject = new List<GameObject>();
+
+            //destroy all child objects, stepping from the last to the first
+            for (int i = childCount - 1; i >= 0; i--)
+            {
+                //Destroy the objects at the end of the frame if we're in play mode
+                if (Application.isPlaying)
+                    Destroy(_DebugGridObjectTransform.GetChild(i).gameObject);
+
+                //Otherwise, destroy them NOW if we're working in edit mode
+                else DestroyImmediate(_DebugGridObjectTransform.GetChild(i).gameObject);
+            }
+        }
+    }
+
+
+
+    [BoxGroup("Setup")]
+    [Button("Build Grid")]
+    private void BuildPathGrid()
+    {
+        //Clear any old pathNode data
+        if (_pathNodes.Count > 0)
+        {
+            //clear all grid utils
+            _pathNodes.Clear();
+        }
+
+        //Build a new pathing grid
+        _pathGrid = new PathGrid(_gridWidth, _gridHeight, _unityGrid, _gridOffset);
+
+
+        //Now cache each new gridNode (nodes are value data types)...
+        for (int i = 0; i < _gridWidth; i++)
+        {
+            for (int j = 0; j < _gridHeight; j++)
+            {
+                //cache the current node for clarity
+                PathNode currentNode = _pathGrid.GetCell(i, j);
+
+                //Generate the current vector2 index for clarity
+                Vector2Int dictionaryIndex = new Vector2Int(i, j);
+
+                //Add the node to the pathNode collection (for easier iteration later)
+                _pathNodes.Add(dictionaryIndex, currentNode);
+            }
+        }
+
+        //Update the tileManager's data with the newly generated grid
+        _tileBehaviorManager.UpdateTileData(this);
+
+        //Update the grid's walkability data
+        ReadTileWalkability();
+
+        //Build the debug utilites associated with this new grid
+        GenerateDebugGrid();
+    }
+
+
+
+
+    //[BoxGroup("Setup")]
+    //[Button("Read Walkability Data")]
+    private void ReadTileWalkability()
+    {
+        Dictionary<Vector2Int, TileBehavior> tileBehaviors = _tileBehaviorManager.GetTileData();
+
+        foreach (KeyValuePair<Vector2Int, TileBehavior> tileEntry in tileBehaviors)
+        {
+            //setup a temp node that's a copy of the node we're about to update
+            PathNode node = _pathNodes[tileEntry.Key];
+
+            Debug.Log($"Behavior's Walkability: {tileEntry.Value.IsWalkable()}");
+
+            //apply the update to the copy
+            node._isWalkable = tileEntry.Value.IsWalkable();
+
+            //replace the old node with the updated copy
+            _pathNodes[tileEntry.Key] = node;
+
+            Debug.Log($"new node's Walkability: {node._isWalkable}");
+
+            //Also be certain to reflect the change on our grid
+            _pathGrid.UpdateCell(tileEntry.Key, node);
         }
     }
 
@@ -273,38 +436,7 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
 
 
     //Externals
-    public void BuildPathGrid()
-    {
-        if (_pathGrid != null)
-        {
-            //clear all grid utils
-            _pathNodes.Clear();
-
-            //delete each visual debug object of the previous grid
-            foreach (DebugNode node in _debugNodes)
-            {
-                //if NOT in play mode, destory immediately (for editor debugging)
-                if (!Application.isPlaying)
-                    DestroyImmediate(node._visualTile);
-
-                //else destroy on the game's own time
-                else
-                    Destroy(node._visualTile);
-            }
-
-            //clear all the debug nodes
-            _debugNodes.Clear();
-
-        }
-
-        //Build the pathing grid
-        _pathGrid = new PathGrid(_gridWidth, _gridHeight, _unityGrid, _gridOffset);
-
-        //Build the debug utilites associated with this new grid
-        BuildDebugUtilities();
-    }
-
-
+    [TabGroup("Debug/Tabgroup", "Functions")]
     [Button("GetLocalCellPosition")]
     public Vector3 GetLocalCellPosition(int x, int y)
     {
@@ -323,8 +455,8 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
     }
 
 
-
-
+    [TabGroup("Debug/Tabgroup", "Functions")]
+    [Button("Debug/GetWorldCellPosition")]
     public Vector3 GetWorldCellPositon(int x, int y)
     {
         Vector3Int cellPosition = new Vector3Int(x, y, 0);
@@ -341,6 +473,11 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
         return GetWorldCellPositon(xy.Item1, xy.Item2);
     }
 
+
+    public Dictionary<Vector2Int, PathNode> GetPathNodes()
+    {
+        return _pathNodes;
+    }
 
 
 
