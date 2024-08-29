@@ -1,6 +1,7 @@
 using Sirenix.OdinInspector;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -112,35 +113,67 @@ public class DebugTileBehavior : MonoBehaviour
         _parentIndexText.text = $"{node._parentIndex.x},{node._parentIndex.y}";
     }
 
+    public Vector2Int GetIndex()
+    {
+        return _index;
+    }
+
 
 
     //UI management
     public void ShowCostData()
     {
-        _defaultUiObject.SetActive(false);
-
         _costDisplay.SetActive(true);
-        _parentDisplay.SetActive(false);
+    }
+
+    public void HideCostData()
+    {
+        _costDisplay.SetActive(false);
     }
 
     public void ShowParentData()
     {
-        _defaultUiObject.SetActive(false);
-
         _parentDisplay.SetActive(true);
-        _costDisplay.SetActive(false);
     }
 
-    public void ShowIndex()
+    public void HideParentData()
+    {
+        _parentDisplay.SetActive(false);
+    }
+
+    public void ShowDefaultUi()
     {
         _defaultUiObject.SetActive(true);
+    }
 
-        _costDisplay.SetActive(false);
-        _parentDisplay.SetActive(false);
+    public void HideDefualtUi()
+    {
+        _defaultUiObject.SetActive(false);
+    }
+
+    public void ShowPathingData()
+    {
+        ShowCostData();
+        ShowParentData();
+    }
+
+    public void HidePathingData()
+    {
+        HideCostData();
+        HideParentData();
     }
 
 }
 
+
+
+
+public enum GridDisplayMode
+{
+    Default,
+    Walkability,
+    PathData
+}
 
 
 [CreateAssetMenu]
@@ -171,7 +204,7 @@ public class DebugGridManager : SerializedScriptableObject, IQuickLoggable
     [SerializeField] private GameObject _yLabelDebugTilePrefab;
 
 
-    [TabGroup("Setup/Tabgroup","Tile Colors")]
+    [TabGroup("Setup/Tabgroup/Color","Tile Colors")]
     [SerializeField] private Color _defaultColor;
 
     [TabGroup("Setup/Tabgroup", "Tile Colors")]
@@ -187,11 +220,12 @@ public class DebugGridManager : SerializedScriptableObject, IQuickLoggable
     [SerializeField] private Color _unwalkableColor;
 
 
-    [BoxGroup("Management")]
-    [TabGroup("Management/Tabgroup", "Grid Nodes")]
+    [BoxGroup("Grid")]
+    [SerializeField] private GridDisplayMode _gridDisplayMode = GridDisplayMode.Default;
+    [TabGroup("Grid/Tabgroup", "Grid Nodes")]
     [SerializeField] private Dictionary<Vector2Int, GridNode> _gridNodes = new();
 
-    [TabGroup("Management/Tabgroup", "Debug Tiles")]
+    [TabGroup("Grid/Tabgroup", "Debug Tiles")]
     [SerializeField] private Dictionary<Vector2Int, DebugTileBehavior> _debugTileBehaviors = new();
 
 
@@ -202,14 +236,85 @@ public class DebugGridManager : SerializedScriptableObject, IQuickLoggable
 
 
     //Internals ================================================================================
-    private void ShowDefaultColors()
+    private void ShowDefaultTileDisplay()
+    {
+        //look at each tile's debugBehavior
+        foreach (KeyValuePair<Vector2Int, DebugTileBehavior> entry in _debugTileBehaviors)
+        {
+            //show the object's default ui
+            entry.Value.ShowDefaultUi();
+
+            //is the current tile a label?
+            if (entry.Value.IsLabel())
+            {
+                //if the x index is off the grid, then this tile is an xLabel
+                if (entry.Value.GetIndex().x < 0)
+                    entry.Value.SetColor(_xLabelColor);
+                
+                //otherwise, its a yLabel
+                else
+                    entry.Value.SetColor(_yLabelColor);
+            }
+
+            //if the tile isn't a label, default it's color
+            else
+                entry.Value.SetColor(_defaultColor);
+        }
+    }
+
+    private void ShowWalkabilityDisplay()
+    {
+        //look at each tile's debugBehavior
+        foreach (KeyValuePair<Vector2Int, DebugTileBehavior> entry in _debugTileBehaviors)
+        {
+            //ignore labels that exist outside of the grid
+            if (_gridNodes.ContainsKey(entry.Key))
+            {
+                if (_gridNodes[entry.Key]._isWalkable)
+                    entry.Value.SetColor(_walkableColor);
+                else
+                    entry.Value.SetColor(_unwalkableColor);
+            }
+        }
+    }
+
+    private void HideDefaultTileDisplay()
     {
         foreach (KeyValuePair<Vector2Int, DebugTileBehavior> entry in _debugTileBehaviors)
         {
-            entry.Value.SetColor(_defaultColor);
+            //ignore labels-- tiles that exist outside of the grid
+            if (_gridNodes.ContainsKey(entry.Key))
+            {
+                //hide the behavior's default object
+                entry.Value.HideDefualtUi();
+            }
+            
         }
-
     }
+
+    private void ShowPathDataDisplay()
+    {
+        //look at each tile's debugBehavior
+        foreach (KeyValuePair<Vector2Int, DebugTileBehavior> entry in _debugTileBehaviors)
+        {
+            //ignore labels that exist outside of the grid
+            if (_gridNodes.ContainsKey(entry.Key))
+                entry.Value.ShowPathingData();
+        }
+    }
+
+    private void HidePathDataDisplay()
+    {
+        //look at each tile's debugBehavior
+        foreach (KeyValuePair<Vector2Int, DebugTileBehavior> entry in _debugTileBehaviors)
+        {
+            //ignore labels that exist outside of the grid
+            if (_gridNodes.ContainsKey(entry.Key))
+                entry.Value.HidePathingData();
+        }
+    }
+
+
 
     [BoxGroup("Debug")]
     [Button("Destroy Debug Grid")]
@@ -238,8 +343,8 @@ public class DebugGridManager : SerializedScriptableObject, IQuickLoggable
     }
 
 
-    [BoxGroup("Management")]
-    [Button("Generate Debug Grid")]
+    [BoxGroup("Grid")]
+    [Button("Regenerate Debug Grid")]
     private void GenerateDebugGrid()
     {
 
@@ -376,11 +481,64 @@ public class DebugGridManager : SerializedScriptableObject, IQuickLoggable
     }
 
 
-    //public void UpdateGridNode(GridNode preexistingNode) {}
+    [BoxGroup("Grid")]
+    [Button("Set Display Mode")]
+    public void SetDisplayMode(GridDisplayMode newMode)
+    {
+        switch (newMode)
+        {
+            case GridDisplayMode.Default:
+                //Hide any other mode data
+                if (_gridDisplayMode == GridDisplayMode.PathData)
+                    HidePathDataDisplay();
+
+                //update the mode
+                _gridDisplayMode = newMode;
+
+                //show the graphical data
+                ShowDefaultTileDisplay();
+                break;
+
+
+
+            case GridDisplayMode.Walkability:
+
+                //Hide any other mode data
+                if (_gridDisplayMode == GridDisplayMode.PathData)
+                    HidePathDataDisplay();
+
+                //update the mode
+                _gridDisplayMode = newMode;
+
+                //show graphical data
+                ShowWalkabilityDisplay(); 
+                break;
+
+
+
+            case GridDisplayMode.PathData:
+
+                //Hide any other mode data
+                HideDefaultTileDisplay();
+
+                //update mode
+                _gridDisplayMode = newMode;
+
+                //show graphical data
+                ShowPathDataDisplay();
+                break;
+        }
+
+
+    }
 
 
 
 
+
+
+
+    //Debugging
     public int GetScriptID()
     {
         return GetInstanceID();
