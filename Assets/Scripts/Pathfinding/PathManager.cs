@@ -289,19 +289,7 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
     [SerializeField] private TileBehaviorManager _tileBehaviorManager;
 
     [TabGroup("Setup/Tabgroup", "References")]
-    [SerializeField] private Transform _DebugGridObjectTransform;
-
-    [TabGroup("Setup/Tabgroup", "References")]
-    [SerializeField] private GameObject _positionDebugTilePrefab;
-
-    [TabGroup("Setup/Tabgroup", "References")]
-    [SerializeField] private GameObject _xCounterTilePrefab;
-
-    [TabGroup("Setup/Tabgroup", "References")]
-    [SerializeField] private GameObject _yCounterTilePrefab;
-
-    [TabGroup("Setup/Tabgroup", "References")]
-    [SerializeField] private Camera _eventCamera;
+    [SerializeField] private DebugGridManager _debugGridManager;
 
 
 
@@ -311,11 +299,6 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
 
     [TabGroup("Grid/Tabgroup", "Nodes")]
     [SerializeField] Dictionary<Vector2Int, GridNode> _gridNodes = new();
-
-
-
-    [TabGroup("Grid/Tabgroup", "Debug Nodes")]
-    [SerializeField] private Dictionary<Vector2Int, DebugNode> _debugNodes = new();
 
 
 
@@ -335,129 +318,6 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
 
 
     //Internals
-    [TabGroup("Debug/Tabgroup","Grid")]
-    [Button("Generate Debug Grid")]
-    private void GenerateDebugGrid()
-    {
-        //if any debug nodes OR any debug grid objects exist, destroy everything
-        if (_debugNodes.Count > 0 || _DebugGridObjectTransform.childCount > 0)
-        {
-            //Destroy all preexisting debug grid data
-            DestroyDebugGrid();
-        }
-
-
-
-        //declare our temp object
-        GameObject newDebugTile = null;
-
-
-
-        //Use our collection of gridNodes to populate our debugNode Collection
-        foreach(KeyValuePair<Vector2Int,GridNode> nodeEntry in _gridNodes)
-        {
-            //Create a new debug tile
-            newDebugTile = Instantiate(_positionDebugTilePrefab, _DebugGridObjectTransform);
-
-            //declare index for clarity
-            Vector2Int index = nodeEntry.Key;
-
-            //Setup DebugTile Behavior
-            newDebugTile.GetComponent<DebugTileBehavior>().SetCamera(_eventCamera);
-            newDebugTile.GetComponent<DebugTileBehavior>().SetIndex(index.x, index.y);
-            newDebugTile.GetComponent<DebugTileBehavior>().SetValue($"{index.x},{index.y}");
-
-            //Create a new DebugNode and add it to our debugNode collection 
-            _debugNodes.Add(index, new DebugNode(nodeEntry.Value, newDebugTile));
-        }
-
-
-
-        //delcare the variables for our x & y indicator tiles
-        GameObject newXTile = null;
-        GameObject newYTile = null;
-
-
-
-        //Label the x rows
-        for (int i = 0; i < _gridWidth; i++)
-        {
-            // Create an x DebugTile to label the current row 
-            newXTile = Instantiate(_xCounterTilePrefab, _DebugGridObjectTransform);
-
-            //Setup DebugTile Behavior
-            newXTile.GetComponent<DebugTileBehavior>().SetCamera(_eventCamera);
-            newXTile.GetComponent<DebugTileBehavior>().SetIndex(i, -1);
-            newXTile.GetComponent<DebugTileBehavior>().SetValue(i.ToString());
-
-            //calculate the node's local position
-            Vector3 localPosition = _unityGrid.CellToLocal(new Vector3Int(i, -1, 0));
-
-            //offset the node
-            localPosition += _gridOffset;
-
-            //Create a new DebugNode and add it to our debugNode collection 
-            _debugNodes.Add(new Vector2Int(i, -1), new DebugNode(i, -1, newXTile, localPosition));
-        }
-
-
-
-        //Label the y columns
-        for (int j = 0; j < _gridHeight; j++)
-        {
-            // Create a y DebugTile to label the current y column
-            newYTile = Instantiate(_yCounterTilePrefab, _DebugGridObjectTransform);
-
-            //Setup DebugTile Behavior
-            newYTile.GetComponent<DebugTileBehavior>().SetCamera(_eventCamera);
-            newYTile.GetComponent<DebugTileBehavior>().SetIndex(-1, j);
-            newYTile.GetComponent<DebugTileBehavior>().SetValue(j.ToString());
-
-            //calculate the node's local position
-            Vector3 localPosition = _unityGrid.CellToLocal(new Vector3Int(-1, j, 0));
-
-            //offset the node
-            localPosition += _gridOffset;
-
-            //Create a new DebugNode and add it to our debugNode collection 
-            _debugNodes.Add(new Vector2Int(-1, j), new DebugNode(-1, j, newYTile, localPosition));
-        }
-    }
-
-
-
-    [TabGroup("Debug/Tabgroup", "Grid")]
-    [BoxGroup("Debug")]
-    [Button("Destroy Debug Grid")]
-    private void DestroyDebugGrid()
-    {
-        //clear the debug node data
-        _debugNodes.Clear();
-
-        //delete each visual debug object of the previous grid
-        if (_DebugGridObjectTransform.childCount > 0)
-        {
-            //note the number of child objects we have
-            int childCount = _DebugGridObjectTransform.childCount;
-
-            //create our childCollection
-            List<GameObject> childObject = new List<GameObject>();
-
-            //destroy all child objects, stepping from the last to the first
-            for (int i = childCount - 1; i >= 0; i--)
-            {
-                //Destroy the objects at the end of the frame if we're in play mode
-                if (Application.isPlaying)
-                    Destroy(_DebugGridObjectTransform.GetChild(i).gameObject);
-
-                //Otherwise, destroy them NOW if we're working in edit mode
-                else DestroyImmediate(_DebugGridObjectTransform.GetChild(i).gameObject);
-            }
-        }
-    }
-
-
-
     [BoxGroup("Setup")]
     [Button("Build Grid")]
     private void BuildPathGrid()
@@ -495,8 +355,8 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
         //Update the grid's walkability data
         ReadTileWalkability();
 
-        //Build the debug utilites associated with this new grid
-        GenerateDebugGrid();
+        //Send the new grid data to the debugGridManager to render a new debug grid
+        _debugGridManager.SetGridNodes(_gridNodes, new Vector2Int(_gridWidth,_gridHeight),_gridOffset);
     }
 
 
@@ -844,6 +704,11 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
     public Dictionary<Vector2Int, GridNode> GetPathNodes()
     {
         return _gridNodes;
+    }
+
+    public bool IsWalkable(Vector2Int index)
+    {
+        return _gridNodes[index]._isWalkable;
     }
 
 

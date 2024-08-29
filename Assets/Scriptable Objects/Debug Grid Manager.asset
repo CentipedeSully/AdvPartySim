@@ -1,0 +1,77 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 0}
+  m_Name: Debug Grid Manager
+  m_EditorClassIdentifier: Assembly-CSharp::DebugGridManager
+  serializationData:
+    SerializedFormat: 2
+    SerializedBytes: 
+    ReferencedUnityObjects: []
+    SerializedBytesString: 
+    Prefab: {fileID: 0}
+    PrefabModificationsReferencedUnityObjects: []
+    PrefabModifications: []
+    SerializationNodes:
+    - Name: _gridNodes
+      Entry: 7
+      Data: 0|System.Collections.Generic.Dictionary`2[[UnityEngine.Vector2Int, UnityEngine.CoreModule],[GridNode,
+        Assembly-CSharp]], mscorlib
+    - Name: comparer
+      Entry: 7
+      Data: 1|System.Collections.Generic.GenericEqualityComparer`1[[UnityEngine.Vector2Int,
+        UnityEngine.CoreModule]], mscorlib
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: _debugTileBehaviors
+      Entry: 7
+      Data: 2|System.Collections.Generic.Dictionary`2[[UnityEngine.Vector2Int, UnityEngine.CoreModule],[DebugTileBehavior,
+        Assembly-CSharp]], mscorlib
+    - Name: comparer
+      Entry: 7
+      Data: 3|System.Collections.Generic.GenericEqualityComparer`1[[UnityEngine.Vector2Int,
+        UnityEngine.CoreModule]], mscorlib
+    - Name: 
+      Entry: 8
+      Data: 
+    - Name: 
+      Entry: 12
+      Data: 0
+    - Name: 
+      Entry: 13
+      Data: 
+    - Name: 
+      Entry: 8
+      Data: 
+  _unityGrid: {fileID: 0}
+  _mainCamera: {fileID: 0}
+  _debugGridParent: {fileID: 0}
+  _debugTilePrefab: {fileID: 5365175134831179112, guid: 408f9d7001aa60b4190d8f7351cd4942,
+    type: 3}
+  _xLabelDebugTilePrefab: {fileID: 7958908615772802429, guid: 589b8134ddae4ad4496457df370e6d65,
+    type: 3}
+  _yLabelDebugTilePrefab: {fileID: 1670705639163812604, guid: aabe8ec8bfe268943a3f0eca0dee5412,
+    type: 3}
+  _defaultColor: {r: 1, g: 0.6745098, b: 0, a: 0.65882355}
+  _xLabelColor: {r: 1, g: 0, b: 0.8735976, a: 0.64705884}
+  _yLabelColor: {r: 0, g: 0.5568628, b: 1, a: 0.5372549}
+  _walkableColor: {r: 0.8490566, g: 0.8490566, b: 0.8490566, a: 0.6862745}
+  _unwalkableColor: {r: 0.24528301, g: 0.24528301, b: 0.24528301, a: 0.62352943}
