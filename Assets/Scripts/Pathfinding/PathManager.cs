@@ -288,8 +288,7 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
     [TabGroup("Setup/Tabgroup", "References")]
     [SerializeField] private TileBehaviorManager _tileBehaviorManager;
 
-    [TabGroup("Setup/Tabgroup", "References")]
-    [SerializeField] private DebugGridManager _debugGridManager;
+    
 
 
 
@@ -300,7 +299,8 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
     [TabGroup("Grid/Tabgroup", "Nodes")]
     [SerializeField] Dictionary<Vector2Int, GridNode> _gridNodes = new();
 
-
+    [BoxGroup("Debug Grid")]
+    [SerializeField] private DebugGridManager _debugGridManager;
 
 
     //[SerializeField] private Dictionary<int,IPathAgent> _agents;
@@ -513,6 +513,9 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
             //sort the path list into a "start-to-destination" format
             pathList.Reverse();
 
+            //Visualize our hard work to the gridManager
+            VisualizeDebugPathData(pathList, openNodes, closedNodes);
+
             //return our hard work
             return pathList;
         }
@@ -547,44 +550,35 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
             if (closedNodes.ContainsKey(neighborIndex))
                 continue;
 
-            //Calculate this neighbor's gCost: distance from currentNode + currentNode's gCost
-            int neighborCostG = CalculateCellDistance(currentNode._index, neighborIndex) + currentNode._gCost;
 
-            //Calculate this neighbor's hCost
-            int neightborCostH = CalculateCellDistance(neighborIndex, destination);
+            //calculate the gCost from our current node To this neighbor
+            int newPathToNeighborCostG = currentNode._gCost + CalculateCellDistance(currentNode._index, neighborIndex);
 
-            //Create a new path node representing this valid, upstanding neighbor
-            PathNode neighbor = new PathNode(neighborIndex, currentNode._index,neighborCostG, neightborCostH);
 
-            //Add this neighbor to the list of neighbors
-            neighbors.Add(neighbor);
-        }
-
-        //Add/Update our openNodes collection using our new neighbors
-        foreach (PathNode neighbor in neighbors)
-        {
-            //if this node already exists as an open node
-            if (openNodes.ContainsKey(neighbor._index))
+            //is this neighbor already in our openNodes collection
+            if (openNodes.ContainsKey(neighborIndex))
             {
-                //calculate a new gCost from this current node to the neighbor
-                int newCostG = CalculateCellDistance(currentNode._index,neighbor._index) + currentNode._gCost;
-
-                //replace the entry if our new gCost (a new path to this neighbor) is cheaper that the neighbor's
-                if (newCostG < neighbor._gCost)
+                //did we find a shorter path to this neighbor?
+                if (newPathToNeighborCostG < openNodes[neighborIndex]._gCost)
                 {
-                    int newCostH = CalculateCellDistance(neighbor._index, destination);
-                    openNodes[neighbor._index].UpdateParentAndTraversalCost(currentNode._index, newCostG, newCostH);
+                    //create a new node with updated pathCosts 
+                    PathNode newUpdatedNode = new PathNode(neighborIndex, currentNode._index, newPathToNeighborCostG, CalculateCellDistance(neighborIndex,destination));
+
+                    //replace the preexisting neighbor's node entry with this new node
+                    openNodes[neighborIndex] = newUpdatedNode;
                 }
-                    
-                    
             }
 
-            //this neighbor is new
+            //otherwise, add it to the openNodes collection
             else
             {
-                //add it to the list
-                openNodes.Add(neighbor._index, neighbor);
+                //create the new neighbor node. 
+                PathNode newNeighborNode = new PathNode(neighborIndex, currentNode._index, newPathToNeighborCostG, CalculateCellDistance(neighborIndex, destination));
+
+                //add this new node into our openNodes collection
+                openNodes.Add(neighborIndex, newNeighborNode);
             }
+
         }
 
 
@@ -608,7 +602,11 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
             {
                 //the first node we see is by default the cheapest
                 if (isFirstIteration)
+                {
                     cheapestNode = entry.Value;
+                    isFirstIteration = false;
+                }
+                    
 
                 else
                 {
@@ -631,7 +629,6 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
 
         }
     }
-
 
     private List<Vector2Int> TraceBackPath(PathNode currentNode, Dictionary<Vector2Int,PathNode> traversedNodes)
     {
@@ -658,6 +655,39 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
         return path;
 
     }
+
+    private void VisualizeDebugPathData(List<Vector2Int> foundPath, Dictionary<Vector2Int, PathNode> inspectedNodes, Dictionary<Vector2Int, PathNode> exploredNodes)
+    {
+        //update the inspected nodes' ui
+        foreach (KeyValuePair<Vector2Int, PathNode> entry in inspectedNodes)
+            _debugGridManager.UpdatePathingVisual(entry.Value, PathingVisualState.Inspected);
+
+
+        //update the explored nodes' ui
+        foreach (KeyValuePair<Vector2Int, PathNode> entry in exploredNodes)
+            _debugGridManager.UpdatePathingVisual(entry.Value, PathingVisualState.Explored);
+
+
+        //check our explored nodes
+        foreach (KeyValuePair<Vector2Int, PathNode> entry in exploredNodes)
+        {
+            //if the explored node is a part of our path, update its debug visual as InPath
+            if (foundPath.Contains(entry.Key))
+                _debugGridManager.UpdatePathingVisual(entry.Value, PathingVisualState.InPath);
+        }
+
+    }
+
+
+    [TabGroup("Debug/Tabgroup", "Pathing")]
+    [Button("Clear Debug Pathing Data")]
+    private void ClearDebugPathingGrid()
+    {
+        foreach (KeyValuePair<Vector2Int, GridNode> entry in _gridNodes)
+            _debugGridManager.ClearPathNodeUi(entry.Key);
+    }
+
+
 
 
 

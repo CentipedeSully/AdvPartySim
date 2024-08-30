@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 300176d30b74b1d4e975bc6813582d51, type: 3}
   m_Name: Debug Grid Manager
   m_EditorClassIdentifier: Assembly-CSharp::DebugGridManager
   serializationData:
@@ -4360,7 +4360,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -5885,7 +5885,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -5946,7 +5946,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -6007,7 +6007,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -7532,7 +7532,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -9057,7 +9057,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -10582,7 +10582,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -12107,7 +12107,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -13632,7 +13632,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -15157,7 +15157,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -16682,7 +16682,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -18207,7 +18207,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -18268,7 +18268,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -18329,7 +18329,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -18390,7 +18390,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -18451,7 +18451,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -18512,7 +18512,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -18573,7 +18573,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -18634,7 +18634,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -18695,7 +18695,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -19732,7 +19732,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -21257,7 +21257,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -22538,7 +22538,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -22599,7 +22599,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -22660,7 +22660,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -22721,7 +22721,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -22782,7 +22782,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -24307,7 +24307,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -25832,7 +25832,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -27296,7 +27296,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -27357,7 +27357,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -27418,7 +27418,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -33457,7 +33457,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -33518,7 +33518,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -33579,7 +33579,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -33640,7 +33640,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -33701,7 +33701,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -33762,7 +33762,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -35287,7 +35287,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -36629,7 +36629,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -36690,7 +36690,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: true
+      Data: false
     - Name: _occupants
       Entry: 6
       Data: 
@@ -53045,9 +53045,15 @@ MonoBehaviour:
     type: 3}
   _yLabelDebugTilePrefab: {fileID: 1670705639163812604, guid: aabe8ec8bfe268943a3f0eca0dee5412,
     type: 3}
-  _defaultColor: {r: 1, g: 0.6745098, b: 0, a: 0.65882355}
-  _xLabelColor: {r: 1, g: 0, b: 0.8735976, a: 0.64705884}
-  _yLabelColor: {r: 0, g: 0.5568628, b: 1, a: 0.5372549}
-  _walkableColor: {r: 0.8490566, g: 0.8490566, b: 0.8490566, a: 0.6862745}
-  _unwalkableColor: {r: 0.24528301, g: 0.24528301, b: 0.24528301, a: 0.62352943}
+  _defaultTileColor: {r: 1, g: 0.53494525, b: 0, a: 0.09803922}
+  _xLabelColor: {r: 0.08884287, g: 0, b: 1, a: 0.59607846}
+  _yLabelColor: {r: 0.84874153, g: 0, b: 1, a: 0.54509807}
+  _defaultTextColor: {r: 1, g: 1, b: 1, a: 1}
+  _walkableTileColor: {r: 1, g: 0.995283, b: 0.995283, a: 0.48235294}
+  _unwalkableTileColor: {r: 0.46226418, g: 0.46226418, b: 0.46226418, a: 0.69411767}
+  _tileInspectedColor: {r: 0.033018887, g: 1, b: 0.28441623, a: 0.49803922}
+  _tileExploredColor: {r: 1, g: 0.6076495, b: 0, a: 0.5686275}
+  _tileInReturnPathColor: {r: 1, g: 0, b: 0, a: 0.70980394}
+  _pathingTextColor: {r: 0, g: 0, b: 0, a: 1}
+  _arrowColor: {r: 0.8980393, g: 0.28235295, b: 0, a: 1}
   _gridDisplayMode: 2
