@@ -4360,7 +4360,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -5885,7 +5885,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -5946,7 +5946,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -6007,7 +6007,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -7532,7 +7532,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -9057,7 +9057,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -10582,7 +10582,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -12107,7 +12107,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -13632,7 +13632,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -15157,7 +15157,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -16682,7 +16682,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -18207,7 +18207,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -18268,7 +18268,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -18329,7 +18329,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -18390,7 +18390,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -18451,7 +18451,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -18512,7 +18512,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -18573,7 +18573,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -18634,7 +18634,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -18695,7 +18695,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -19732,7 +19732,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -21257,7 +21257,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -22538,7 +22538,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -22599,7 +22599,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -22660,7 +22660,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -22721,7 +22721,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -22782,7 +22782,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -24307,7 +24307,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -25832,7 +25832,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -27296,7 +27296,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -27357,7 +27357,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -27418,7 +27418,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -33457,7 +33457,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -33518,7 +33518,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -33579,7 +33579,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -33640,7 +33640,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -33701,7 +33701,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -33762,7 +33762,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -35287,7 +35287,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -36629,7 +36629,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -36690,7 +36690,7 @@ MonoBehaviour:
       Data: 0
     - Name: _isWalkable
       Entry: 5
-      Data: false
+      Data: true
     - Name: _occupants
       Entry: 6
       Data: 
@@ -53056,4 +53056,4 @@ MonoBehaviour:
   _tileInReturnPathColor: {r: 1, g: 0, b: 0, a: 0.70980394}
   _pathingTextColor: {r: 0, g: 0, b: 0, a: 1}
   _arrowColor: {r: 0.8980393, g: 0.28235295, b: 0, a: 1}
-  _gridDisplayMode: 2
+  _gridDisplayMode: 1

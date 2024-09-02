@@ -313,7 +313,10 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
 
 
     //Monobehaviours
-
+    private void Start()
+    {
+        BuildPathGrid();
+    }
 
 
 
@@ -739,6 +742,11 @@ public class PathManager : SerializedMonoBehaviour, IQuickLoggable
     public bool IsWalkable(Vector2Int index)
     {
         return _gridNodes[index]._isWalkable;
+    }
+
+    public List<Vector2Int> CreatePath(Vector2Int start, Vector2Int destination)
+    {
+        return FindPath(start, destination);
     }
 
 

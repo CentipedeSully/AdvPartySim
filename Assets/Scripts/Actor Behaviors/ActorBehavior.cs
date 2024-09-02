@@ -20,6 +20,8 @@ public enum IndicatorType
     LevelUp
 }
 
+
+
 public interface IActor
 {
     void HurtActor(int damage, DamageType damageType, Vector2 AttackerPosition);
@@ -39,6 +41,41 @@ public interface IActor
 public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
 {
     //Declarations
+    [BoxGroup("Movement")]
+    [TabGroup("Movement/Tabs", "Parameters")]
+    [SerializeField] private bool _isMoving;
+
+    [TabGroup("Movement/Tabs", "Parameters")]
+    [SerializeField] private float _cellMoveTime = 1f;
+
+    [TabGroup("Movement/Tabs", "References")]
+    [SerializeField] private PathManager _pathManager;
+
+    [TabGroup("Movement/Tabs", "References")]
+    [SerializeField] private Grid _unityGrid;
+
+    [BoxGroup("Movement")]
+    [SerializeField] private Vector2Int _currentGridIndex;
+
+    [BoxGroup("Movement")]
+    [SerializeField] private Vector2Int _facingDirection;
+
+    [BoxGroup("Movement")]
+    [SerializeField] private Vector3 _moveLerpStartPosition;
+
+    [BoxGroup("Movement")]
+    [SerializeField] private Vector3 _moveLerpEndPosition;
+    private float _currentMoveLerpTime;
+
+    [BoxGroup("Movement")]
+    [SerializeField] private List<Vector2Int> _currentMovePath = new();
+
+
+
+
+
+
+    
     [BoxGroup("Combat")]
     [SerializeField]
     [Min(.5f)]
@@ -58,33 +95,33 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
     [SerializeField] private int _hitChance = 80;
 
 
-    [TabGroup("Combat Tabs", "Combat States")]
+    [TabGroup("Combat/Tabs", "Combat States")]
     [SerializeField] private bool _isInCombat = false;
 
-    [TabGroup("Combat Tabs", "Combat States")] 
+    [TabGroup("Combat/Tabs", "Combat States")] 
     [SerializeField] private bool _isAtkReady = true;
 
-    [TabGroup("Combat Tabs", "Combat States")]
+    [TabGroup("Combat/Tabs", "Combat States")]
     [SerializeField] private bool _isAtkCoolingDown = false;
 
-    [TabGroup("Combat Tabs", "Combat States")]
+    [TabGroup("Combat/Tabs", "Combat States")]
     [SerializeField] private bool _isHurtStunned = false;
     private float _remainingHurtStunTime = 0;
 
 
-    [TabGroup("Combat Tabs", "Combat Targeting")]
+    [TabGroup("Combat/Tabs", "Combat Targeting")]
     [SerializeField] private IActor _target;
 
-    [TabGroup("Combat Tabs", "Combat Animation Tweaks")]
+    [TabGroup("Combat/Tabs", "Combat Animation Tweaks")]
     [SerializeField] private Transform _spriteParentTransform;
 
-    [TabGroup("Combat Tabs", "Combat Animation Tweaks")]
+    [TabGroup("Combat/Tabs", "Combat Animation Tweaks")]
     [SerializeField] private float _meleeAtkLerpDistance = .3f;
 
-    [TabGroup("Combat Tabs", "Combat Animation Tweaks")]
+    [TabGroup("Combat/Tabs", "Combat Animation Tweaks")]
     [SerializeField] private float _lerpToTargetDuration;
 
-    [TabGroup("Combat Tabs", "Combat Animation Tweaks")]
+    [TabGroup("Combat/Tabs", "Combat Animation Tweaks")]
     [SerializeField] private float _lerpBackToOriginDuration;
 
     private Vector2 _atkOrigin;
@@ -104,25 +141,25 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
 
 
     [Space]
-    [TabGroup("Effects","SFX")][SerializeField] private AudioSource _meleeMiss;
-    [TabGroup("Effects", "SFX")][SerializeField] private Vector2 _missPitchRange;
-    [TabGroup("Effects", "SFX")][SerializeField] private AudioSource _meleeHit;
-    [TabGroup("Effects", "SFX")][SerializeField] private Vector2 _hitPitchRange;
+    [TabGroup("Combat/Effects","SFX")][SerializeField] private AudioSource _meleeMiss;
+    [TabGroup("Combat/Effects", "SFX")][SerializeField] private Vector2 _missPitchRange;
+    [TabGroup("Combat/Effects", "SFX")][SerializeField] private AudioSource _meleeHit;
+    [TabGroup("Combat/Effects", "SFX")][SerializeField] private Vector2 _hitPitchRange;
 
 
-    [TabGroup("Effects", "Animaton Parameters")]
+    [TabGroup("Combat/Effects", "Animaton Parameters")]
     [SerializeField] private Animator _animator;
 
-    [TabGroup("Effects", "Animaton Parameters")]
+    [TabGroup("Combat/Effects", "Animaton Parameters")]
     [SerializeField] private string _atkParam = "isAttacking";
 
-    [TabGroup("Effects", "Animaton Parameters")]
+    [TabGroup("Combat/Effects", "Animaton Parameters")]
     [SerializeField] private string _hurtParam = "isHurt";
 
 
-    [TabGroup("Effects", "UI Graphics")]
+    [TabGroup("Combat/Effects", "UI Graphics")]
     [SerializeField] private CreateIndicator _indicatorCreater;
-    [TabGroup("Effects", "UI Graphics")]
+    [TabGroup("Combat/Effects", "UI Graphics")]
     [SerializeField] private Transform _indicatorContainer;
 
 
@@ -157,13 +194,17 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
     [SerializeField] private bool _DEBUG_takeDamage_cmd = false;
 
     //Monobehaviors
+    private void Start()
+    {
+        ReadGridPosition();
+    }
 
     private void Update()
     {
         ListenForDebugCommands();
         TickHurtStun();
         TickAtkLerp();
-        
+        TickMoveLerp();
     }
 
 
@@ -440,6 +481,96 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
     }
 
 
+    private void ReadGridPosition()
+    {
+        //calculate this object's cell index based on its world position against the grid object
+        Vector3Int gridPosition = _unityGrid.WorldToCell(transform.position);
+
+        //format the v3 into a persistent v2
+        _currentGridIndex = new Vector2Int(gridPosition.x, gridPosition.y);
+    }
+
+    private void EnterCellTransition(Vector2Int endCell)
+    {
+        //Setup the lerp utilities
+        _moveLerpStartPosition = transform.position;
+
+        //format to a v3
+        Vector3Int endPosition = new Vector3Int(endCell.x,endCell.y, 0);
+
+        //Set lerp end position
+        _moveLerpEndPosition = _unityGrid.GetCellCenterLocal(endPosition);
+
+        //reset the lerpTime count in case we're already lerpinp
+        _currentMoveLerpTime = 0;
+
+        //Determine our move direction
+        //...
+
+        //signal the lerp
+        _isMoving = true;
+
+
+
+    }
+
+    private void TickMoveLerp()
+    {
+        if (_isMoving)
+        {
+            _currentMoveLerpTime += Time.deltaTime;
+
+            //move the actor according to our current move time
+            this.transform.position = Vector3.Lerp(_moveLerpStartPosition, _moveLerpEndPosition, _currentMoveLerpTime / _cellMoveTime);
+
+            //reset our lerp utils on completion
+            if (_currentMoveLerpTime >= _cellMoveTime)
+            {
+                //reset our moveTime counter
+                _currentMoveLerpTime = 0;
+
+                //update our grid position
+                ReadGridPosition();
+
+                //Do we have a path to follow?
+                if (_currentMovePath.Count > 0)
+                {
+                    //remove the next-in-line position
+                    Vector2Int nextPosition = _currentMovePath[0];
+
+                    //remove the next position fron our list
+                    _currentMovePath.RemoveAt(0);
+
+                    //enter another cell transition
+                    EnterCellTransition(nextPosition);
+                }
+
+                //otherwise, end the move
+                else _isMoving = false;
+            }
+        }
+
+       
+    }
+
+    private void MoveActor(List<Vector2Int> path)
+    {
+        if (path.Count > 0)
+        {
+            //save the first cell of the path
+            Vector2Int nextCell = path[0];
+
+            //remove the selected cell from the path
+            path.RemoveAt(0);
+
+            //enter our cell transition
+            EnterCellTransition(nextCell);
+        }
+
+    }
+
+
+
     //Externals
     public void HurtActor(int damage, DamageType damageType, Vector2 AttackerPosition)
     {
@@ -563,6 +694,20 @@ public class ActorBehavior : MonoBehaviour, IActor, IQuickLoggable
                 break;
         }
     }
+
+    
+
+    [BoxGroup("Movement")]
+    [Button("Move To Cell")]
+    public void MoveToDestination(Vector2Int targetCell)
+    {
+        _currentMovePath = _pathManager.CreatePath(_currentGridIndex, targetCell);
+
+        if (_currentMovePath != null)
+            MoveActor(_currentMovePath);
+    }
+
+
 
 
 
